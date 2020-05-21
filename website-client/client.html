@@ -16,7 +16,7 @@
 	</style>
 	<script type="text/javascript" charset="utf-8">
         /* Settings to make confiruable later. */
-        /** Size of the delta must be at least  this to send the change. */
+        /* Size of the delta must be at least  this to send the change. */
         const mouseSensitivityX = mouseSensitivityY = 1
 
         let socket
@@ -62,6 +62,7 @@
                 document.getElementById('connect').className = "button is-danger"
 
                 document.getElementById('send-mode-toggle').disabled = false
+                document.getElementById('send-mode-toggleGP').disabled = false
             })
 
             socket.on('disconnect', onDisconnect)
@@ -74,7 +75,8 @@
         $(document).ready(function () {
             const queryString = window.location.search
             const urlParams = new URLSearchParams(queryString)
-            document.getElementById('server-address').value = urlParams.get('a') || 'http://127.0.0.1:5000'
+            // document.getElementById('server-address').value = urlParams.get('a') || 'http://127.0.0.1:5000'
+            document.getElementById('server-address').value = urlParams.get('a') || 'raspberrypi:5000'
 
             const connectNow = urlParams.get('c') === 'true'
             if (connectNow) {
@@ -82,7 +84,7 @@
             }
 
             isInSendMode = urlParams.get('s') === 'true'
-            checkSendMode()
+            checkSendMode(isInSendMode)
         })
 
         function sendCommand(command) {
@@ -97,11 +99,11 @@
 
         function toggleSendMode() {
             isInSendMode = !isInSendMode
-            checkSendMode()
+            checkSendMode(isInSendMode)
         }
 
-        function checkSendMode() {
-            if (isInSendMode) {
+        function checkSendMode(sendMode) {
+            if (sendMode) {
                 document.getElementById('send-mode-status').innerText = "Send mode: ✅ Enabled"
                 document.getElementById('send-mode-toggle').innerText = "Stop Sending Commands"
                 document.getElementById('send-mode-toggle').className = "button is-danger"
@@ -310,6 +312,115 @@
                 currentMousePos.y = newY
             }
         })
+		
+		
+		// controller support functions
+        let isInSendModeGP = false
+		let gamepadConnected = false
+		let gamepadIndex = 0
+		let gamepadInterval = null
+		let gamepads = []
+		let currentGamepadIndex = 0
+		let gamepadState = false
+
+		function setSendModeGP(sendMode){
+			if (!gamepadConnected){
+				alert("gamepad not connected")
+				return;
+			}
+
+			if (sendMode){
+				// we are not currently listening to a gamepad, so lets start.
+				// this is canceled on toggling and on disconnect
+				gamepadInterval = setInterval(readGamepad, 20)
+			} else {
+				clearInterval(gamepadInterval)
+			}
+			console.log(navigator.getGamepads()[0])
+		}
+
+		function toggleSendModeGP(){
+			isInSendModeGP = !isInSendModeGP
+			setSendModeGP(isInSendModeGP)
+		}
+		
+		function readGamepad(){
+					let gamepad = navigator.getGamepads()[currentGamepadIndex]
+					// console.log(gamepad)
+					let newGPstate = {
+						s: {
+							l: {
+								h: gamepad.axes[0],
+								v: gamepad.axes[1],
+							},
+							r: {
+								h: gamepad.axes[2],
+								v: gamepad.axes[3],
+							},
+						},
+						button: {
+							b: gamepad.buttons[0].pressed,
+							a: gamepad.buttons[1].pressed,
+							y: gamepad.buttons[2].pressed,
+							x: gamepad.buttons[3].pressed,
+							l: gamepad.buttons[4].pressed,
+							r: gamepad.buttons[5].pressed,
+							zl: gamepad.buttons[6].pressed,
+							zr: gamepad.buttons[7].pressed,
+							minus: gamepad.buttons[8].pressed,
+							plus: gamepad.buttons[9].pressed,
+							r_stick: gamepad.buttons[10].pressed,
+							l_stick: gamepad.buttons[11].pressed,
+							up: gamepad.buttons[12].pressed,
+							down: gamepad.buttons[13].pressed,
+							left: gamepad.buttons[14].pressed,
+							right: gamepad.buttons[15].pressed,
+						}
+					}
+					if(gamepadState){
+						for(let button in newGPstate.button){
+							if (newGPstate.button[button] === gamepadState.button[button]){
+								continue;
+							}
+							let buttonState = newGPstate.button[button] ? "d" : "u"
+							sendCommand(button + " " + buttonState)
+						}
+						// BEEEEEG deadzones
+
+						if (newGPstate.s.l.h !== gamepadState.s.l.h || newGPstate.s.l.v !== gamepadState.s.l.v){
+							if (Math.sqrt(Math.pow(newGPstate.s.l.h,2) + Math.pow(newGPstate.s.l.v,2)) > .3){
+								sendCommand("s l v " + (newGPstate.s.l.v*100).toPrecision(2))
+								sendCommand("s l h " + (newGPstate.s.l.h*100).toPrecision(2))
+							}
+						}
+						
+					}
+					console.log(gamepadState)
+					gamepadState = newGPstate
+					console.log(gamepadState)
+					$("#debugBox").html(JSON.stringify(gamepadState))
+				}
+		
+		function gamepadConnectionHandler(event, connecting) {
+			var gamepad = event.gamepad;
+			// Note:
+			// gamepad === navigator.getGamepads()[gamepad.index]
+
+			if (connecting) {
+				currentGamepadIndex = gamepad.index
+				gamepads[gamepad.index] = gamepad;
+				gamepadConnected = true
+				checkSendMode(isInSendModeGP && gamepadConnected)
+			} else {
+				gamepadConnected = false
+				delete gamepads[gamepad.index];
+				setSendModeGP(false)
+				checkSendMode(isInSendModeGP && gamepadConnected)
+			}
+		}
+
+		window.addEventListener("gamepadconnected", function(e) { gamepadConnectionHandler(e, true); }, false);
+		window.addEventListener("gamepaddisconnected", function(e) { gamepadConnectionHandler(e, false); }, false);
 	</script>
 </head>
 
@@ -338,6 +449,9 @@
 			<br>
 			<button class="button is-success" id="send-mode-toggle" onclick="toggleSendMode()" disabled>
 				Start Sending Commands
+			</button>
+			<button class="button is-success" id="send-mode-toggleGP" onclick="toggleSendModeGP()" disabled>
+				Start Sending Controller Commands
 			</button>
 			<p class="has-text-white" id="status">Status: </p>
 		</div>
