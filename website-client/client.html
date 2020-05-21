@@ -360,12 +360,13 @@
                     l: {
                         h: gamepad.axes[0],
                         v: gamepad.axes[1],
+                        centered: true,
                     },
                     r: {
                         h: gamepad.axes[2],
                         v: gamepad.axes[3],
+                        centered: true,
                     },
-                    centered: true,
                 },
                 button: {
                     b: a_bSwitch ? gamepad.buttons[1].pressed : gamepad.buttons[0].pressed,
@@ -394,18 +395,20 @@
                     let buttonState = newGPstate.button[button] ? "d" : "u"
                     sendCommand(button + " " + buttonState)
                 }
-                // LEETLE? deadzones
-                if (Math.sqrt(Math.pow(newGPstate.s.l.h, 2) + Math.pow(newGPstate.s.l.v, 2)) > .1) {
-                    newGPstate.s.centered = false
-                }else{
-                    newGPstate.s.centered = true
-                }
-                // dont send too many requests if nothing is changing
-                if (!gamepadState.s.centered && newGPstate.s.centered){
-                    sendCommand("s l hv 0 0")
-                }
-                if (!newGPstate.s.centered){
-                    sendCommand("s l hv " + newGPstate.s.l.h + " " + -newGPstate.s.l.v)
+                // left
+                for (let side of ["l", "r"]) {
+                    if (Math.sqrt(Math.pow(newGPstate.s[side].h, 2) + Math.pow(newGPstate.s[side].v, 2)) > .1) {
+                        newGPstate.s[side].centered = false
+                    } else {
+                        newGPstate.s[side].centered = true
+                    }
+                    // dont send too many requests if nothing is changing
+                    if (!gamepadState.s[side].centered && newGPstate.s[side].centered) {
+                        sendCommand("s "+ side + " hv 0 0")
+                    }
+                    if (!newGPstate.s[side].centered) {
+                        sendCommand("s "+ side + " hv " + newGPstate.s[side].h + " " + -newGPstate.s[side].v)
+                    }
                 }
             }
             gamepadState = newGPstate
