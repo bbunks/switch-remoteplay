@@ -322,26 +322,34 @@
         let gamepads = []
         let currentGamepadIndex = 0
         let gamepadState = false
+        let a_bSwitch = false
 
         function setSendModeGP(sendMode) {
             if (!gamepadConnected) {
-                alert("gamepad not connected")
-                return;
+                $("#send-mode-status").html("Send mode: ❌ Gamepad not connected")
+                return false;
             }
+
 
             if (sendMode) {
                 // we are not currently listening to a gamepad, so lets start.
                 // this is canceled on toggling and on disconnect
                 gamepadInterval = setInterval(readGamepad, 20)
+                $("#send-mode-status").html("Send mode: ✅ Gamepad connected")
             } else {
                 clearInterval(gamepadInterval)
+                $("#send-mode-status").html("Send mode: ❌ Disabled")
             }
-            console.log(navigator.getGamepads()[0])
+            return true
         }
 
         function toggleSendModeGP() {
+            a_bSwitch = !$("#swap_ab").is(":checked")
             isInSendModeGP = !isInSendModeGP
-            setSendModeGP(isInSendModeGP)
+            if (!setSendModeGP(isInSendModeGP)){
+                isInSendModeGP = false
+            }
+            console.log({isInSendModeGP, gamepadConnected, gamepadIndex, gamepadInterval, gamepadState})
         }
 
         function readGamepad() {
@@ -357,10 +365,11 @@
                         h: gamepad.axes[2],
                         v: gamepad.axes[3],
                     },
+                    centered: true,
                 },
                 button: {
-                    b: gamepad.buttons[0].pressed,
-                    a: gamepad.buttons[1].pressed,
+                    b: a_bSwitch ? gamepad.buttons[1].pressed : gamepad.buttons[0].pressed,
+                    a: a_bSwitch ? gamepad.buttons[0].pressed : gamepad.buttons[1].pressed,
                     y: gamepad.buttons[2].pressed,
                     x: gamepad.buttons[3].pressed,
                     l: gamepad.buttons[4].pressed,
@@ -385,20 +394,22 @@
                     let buttonState = newGPstate.button[button] ? "d" : "u"
                     sendCommand(button + " " + buttonState)
                 }
-                // BEEEEEG deadzones
-
-                if (newGPstate.s.l.h !== gamepadState.s.l.h || newGPstate.s.l.v !== gamepadState.s.l.v) {
-                    if (Math.sqrt(Math.pow(newGPstate.s.l.h, 2) + Math.pow(newGPstate.s.l.v, 2)) > .3) {
-                        sendCommand("s l v " + Math.round((newGPstate.s.l.v * 4096)))
-                        sendCommand("s l h " + Math.round((newGPstate.s.l.h * 4096)))
-                    }
+                // LEETLE? deadzones
+                if (Math.sqrt(Math.pow(newGPstate.s.l.h, 2) + Math.pow(newGPstate.s.l.v, 2)) > .1) {
+                    newGPstate.s.centered = false
+                }else{
+                    newGPstate.s.centered = true
                 }
-
+                // dont send too many requests if nothing is changing
+                if (!gamepadState.s.centered && newGPstate.s.centered){
+                    sendCommand("s l hv 0 0")
+                }
+                if (!newGPstate.s.centered){
+                    sendCommand("s l hv " + newGPstate.s.l.h + " " + -newGPstate.s.l.v)
+                }
             }
-            console.log(gamepadState)
             gamepadState = newGPstate
-            console.log(gamepadState)
-            $("#debugBox").html(JSON.stringify(gamepadState))
+            // $("#debugBox").html(JSON.stringify(gamepadState))
         }
 
         function gamepadConnectionHandler(event, connecting) {
@@ -450,6 +461,7 @@
             <br><br>
             <p class="has-text-white" id="connection-status">Connection status: </p>
             <p class="has-text-white" id="send-mode-status">Send mode: </p>
+<!--            <p class="has-text-white" id="send-mode-status-gp">Send mode: </p>-->
             <br>
             <button class="button is-success" id="send-mode-toggle" onclick="toggleSendMode()" disabled>
                 Start Sending Commands
@@ -457,6 +469,7 @@
             <button class="button is-success" id="send-mode-toggleGP" onclick="toggleSendModeGP()" disabled>
                 Start Sending Controller Commands
             </button>
+            <label><p class="has-text-white"><input type="checkbox" class="form-check-input has-text-white" id="swap_ab">Swap A and B (set on controller enable)</p></label>
             <p class="has-text-white" id="status">Status: </p>
         </div>
     </div>
