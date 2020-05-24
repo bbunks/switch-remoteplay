@@ -3,8 +3,6 @@ import classes from "./Controller.module.css";
 import Joystick from "./Joystick/Joystick";
 import Diamond from "./Diamond/Diamond";
 import ConnectController from "./ConnectController/ConnectController";
-//import "../../gameController";
-
 const Controller = (props) => {
   const [connectionStatus, setConnectionStatus] = useState("");
   const [hostname, setHostname] = useState("127.0.0.1");
@@ -17,7 +15,6 @@ const Controller = (props) => {
         <Diamond buttons={["▶", "▼", "▲", "◀"]} />
       </div>
       <div className={classes.Middle}>
-        <h1>Switch RP</h1>
         <ConnectController
           connectionStatus={connectionStatus}
           hostname={hostname}
@@ -25,6 +22,9 @@ const Controller = (props) => {
           setConnectionStatus={setConnectionStatus}
           port={port}
           portChange={setPort}
+          controllerList={props.controllerList}
+          activeController={props.activeController}
+          setActiveController={props.setActiveController}
         />
       </div>
       <div>

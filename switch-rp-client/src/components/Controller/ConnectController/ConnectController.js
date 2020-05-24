@@ -3,7 +3,6 @@ import classes from "./ConnectController.module.css";
 import { setConnection, disconnectSocket } from "../../../socketio";
 
 const ConnectController = (props) => {
-
   //Defining how to connect
   const connect = () => {
     props.setConnectionStatus("connecting");
@@ -20,32 +19,32 @@ const ConnectController = (props) => {
     props.setConnectionStatus("disconnected");
   };
 
-  //Determining what to render depending on the connection state 
+  //Determining what to render depending on the connection state
   let jsx = null;
   switch (props.connectionStatus) {
     case "connecting":
       jsx = (
-        <div className={classes.ConnectController}>
+        <>
           <h3>
             Connecting to {props.hostname}:{props.port}...
           </h3>
           <button onClick={disconnect}>Cancel</button>
-        </div>
+        </>
       );
       break;
     case "connected":
       jsx = (
-        <div className={classes.ConnectController}>
+        <>
           <h3>
             Connected to {props.ip}:{props.port}
           </h3>
           <button onClick={disconnect}>Disconnect</button>
-        </div>
+        </>
       );
       break;
     default:
       jsx = (
-        <div className={classes.ConnectController}>
+        <>
           <h3>Hostname</h3>
           <input
             value={props.hostname}
@@ -64,11 +63,31 @@ const ConnectController = (props) => {
           />
 
           <button onClick={connect}>Connect</button>
-        </div>
+        </>
       );
       break;
   }
-  return jsx;
+  return (
+    <div className={classes.ConnectController}>
+      <h2>Connection</h2>
+      <hr />
+      {jsx}
+      <h2>Controller</h2>
+      <hr />
+      <select
+        value={props.activeController.index}
+        onChange={(e) => props.setActiveController(parseInt(e.target.value))}
+      >
+        {props.controllerList.map((i) => {
+          return (
+            <option key={i.index} value={i.index}>
+              {i.id}
+            </option>
+          );
+        })}
+      </select>
+    </div>
+  );
 };
 
 export default ConnectController;

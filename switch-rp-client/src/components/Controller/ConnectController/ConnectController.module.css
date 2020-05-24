@@ -3,3 +3,22 @@
     flex-direction: column;
     color: white;
 }
+
+.ConnectController h2 {
+    color: white;
+    text-align: center;
+    margin: 1rem;
+    margin-bottom: 0;
+}
+
+.ConnectController button {
+    margin-top: 1rem;
+}
+
+.ConnectController hr {
+    width: 90%;
+}
+
+.ConnectController select {
+    
+}
