@@ -16,7 +16,7 @@ from joycontrol.memory import FlashMemory
 from joycontrol.protocol import controller_protocol_factory
 from joycontrol.server import create_hid_server
 
-from server.switchremoteplay.controller import SwitchController
+from switchremoteplay.controller import SwitchController
 
 logger = logging.getLogger(__name__)
 
