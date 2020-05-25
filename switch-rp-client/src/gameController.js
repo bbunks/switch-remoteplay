@@ -13,8 +13,8 @@ let controllerMap = {
   zl: 4,
   r: 7,
   l: 6,
-  start: 9,
-  select: 8,
+  plus: 9,
+  minus: 8,
   r_stick: 11,
   l_stick: 10,
   "right-stick-x": 2,
@@ -36,8 +36,8 @@ let gamepadState = {
   zl: false,
   r: false,
   l: false,
-  start: false,
-  select: false,
+  plus: false,
+  minus: false,
   r_stick: false,
   l_stick: false,
   "right-stick-x": 0,
@@ -60,8 +60,8 @@ export const translateGamepad = (gamepad) => {
     zl: gamepad.buttons[controllerMap.zl].pressed,
     r: gamepad.buttons[controllerMap.r].pressed,
     l: gamepad.buttons[controllerMap.l].pressed,
-    start: gamepad.buttons[controllerMap.start].pressed,
-    select: gamepad.buttons[controllerMap.select].pressed,
+    plus: gamepad.buttons[controllerMap.plus].pressed,
+    minus: gamepad.buttons[controllerMap.minus].pressed,
     r_stick: gamepad.buttons[controllerMap.r_stick].pressed,
     l_stick: gamepad.buttons[controllerMap.l_stick].pressed,
     //add logic here to emulate joysticks.
@@ -85,19 +85,20 @@ const updateGamepadState = (newGPState) => {
     }
   });
 
+  let commands = [];
   changes.forEach((change) => {
+    let command;
     //checks if the change was on a button
     const { key, value } = change;
     if (key.search("-stick") === -1) {
-      let command = key;
+      command = key;
       if (value) {
         command += " d";
       } else {
         command += " u";
       }
-      sendCommand(command);
     } else {
-      let command = "s ";
+      command = "s ";
 
       if (key.search("left") >= 0) {
         command += "l ";
@@ -112,9 +113,10 @@ const updateGamepadState = (newGPState) => {
       }
 
       command += Math.round(value * 10) / 10;
-      sendCommand(command);
     }
+    commands.push(command);
   });
+  if (commands.length > 0) sendCommand(commands.join("&"));
 };
 
 export const bindControl = (key, button) => {

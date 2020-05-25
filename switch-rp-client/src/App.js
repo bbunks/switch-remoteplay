@@ -3,8 +3,9 @@ import classes from "./App.module.css";
 import Header from "./components/Header/Header";
 import Controller from "./components/Controller/Controller";
 import { translateGamepad } from "./gameController";
+import StreamEmbed from "./components/StreamEmbed/StreamEmbed";
 
-const App = () => {
+const App = (props) => {
   const [controllerList, setControllerList] = useState([
     {
       index: -1,
@@ -13,6 +14,8 @@ const App = () => {
   ]);
   const [activeController, setActiveController] = useState(-1);
   const [controllerState, setControllerState] = useState({});
+  const [channel, setChannel] = useState("monstercat");
+  const [platform, setPlatform] = useState("twitch");
   const [timestamp, setTimestamp] = useState(0);
   let pollRef;
 
@@ -96,11 +99,16 @@ const App = () => {
   return (
     <div className={classes.App}>
       <Header />
+      <StreamEmbed channel={channel} platform={platform} />
       <Controller
         controllerList={controllerList}
         activeController={activeController}
         setActiveController={setActiveController}
         controllerState={controllerState}
+        channel={channel}
+        setChannel={setChannel}
+        platform={platform}
+        setPlatform={setPlatform}
       />
     </div>
   );

@@ -12,7 +12,7 @@ export const setConnection = (ip, onConnect, onDisconnect) => {
 
 export const sendCommand = (command) => {
   if (socket) {
-    console.log("sending the command '" + command + "'");
+    //console.log("sending the command '" + command + "'");
     socket.emit("p", command);
   }
 };
