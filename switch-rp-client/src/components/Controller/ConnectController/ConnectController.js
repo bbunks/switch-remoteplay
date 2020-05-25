@@ -39,7 +39,7 @@ const ConnectController = (props) => {
       jsx = (
         <>
           <h3>
-            Connected to {props.ip}:{props.port}
+            Connected to {props.hostname}:{props.port}
           </h3>
           <button onClick={disconnect}>Disconnect</button>
         </>

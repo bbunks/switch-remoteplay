@@ -10,7 +10,13 @@ export const setConnection = (ip, onConnect, onDisconnect) => {
   socket.on("disconnect", onDisconnect);
 };
 
-export const sendCommand = (command) => {};
+export const sendCommand = (command) => {
+  if (socket) {
+    console.log("sending the command '" + command + "'");
+    socket.emit("p", command);
+  }
+};
+
 export const disconnectSocket = () => {
   socket.disconnect();
   socket = null;
