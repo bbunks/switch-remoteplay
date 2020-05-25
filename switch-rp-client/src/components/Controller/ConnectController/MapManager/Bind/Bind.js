@@ -1,5 +1,6 @@
 import React from "react";
 import classes from "./Bind.module.css";
+import { getControllerMap } from "../../../../../gameController";
 
 function Bind(props) {
   return (
@@ -8,7 +9,11 @@ function Bind(props) {
         <h4>{props.label}</h4>
       </div>
       <div className={classes.ColContainer}>
-        <input value={props.value} />
+        <input
+          value={getControllerMap()[props.buttonKey]}
+          onFocus={(e) => props.setToBind(props.buttonKey)}
+          onBlur={(e) => props.setToBind(null)}
+        />
       </div>
     </div>
   );

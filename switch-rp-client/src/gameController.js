@@ -7,8 +7,8 @@ let controllerMap = {
   y: 2,
   up: 12,
   down: 13,
-  right: 15,
   left: 14,
+  right: 15,
   zr: 5,
   zl: 4,
   r: 7,
@@ -17,10 +17,22 @@ let controllerMap = {
   minus: 8,
   r_stick: 11,
   l_stick: 10,
+  //only read if the emulated joysticks is false
   "right-stick-x": 2,
   "right-stick-y": 3,
   "left-stick-x": 0,
   "left-stick-y": 1,
+  //set to true for emulated joysticks
+  "emulate-joystick": false,
+  //only read if the emulated joysticks is true
+  "right-stick-y-up": 12,
+  "right-stick-y-down": 13,
+  "right-stick-x-left": 14,
+  "right-stick-x-right": 15,
+  "left-stick-x-left": 0,
+  "left-stick-x-right": 0,
+  "left-stick-y-up": 1,
+  "left-stick-y-down": 1,
 };
 
 let gamepadState = {
@@ -45,6 +57,27 @@ let gamepadState = {
   "left-stick-x": 0,
   "left-stick-y": 0,
 };
+const calcJoystick = (stick, axes, gamepad) => {
+  let emulatedValue = 0;
+  if (controllerMap["emulate-joystick"]) {
+    let keyStr = stick + "-stick-" + axes + "-";
+
+    emulatedValue += gamepad.buttons[
+      controllerMap[keyStr + (axes === "x" ? "left" : "up")]
+    ].pressed
+      ? -1
+      : 0;
+    emulatedValue += gamepad.buttons[
+      controllerMap[keyStr + (axes === "x" ? "right" : "down")]
+    ].pressed
+      ? 1
+      : 0;
+  } else {
+    emulatedValue = gamepad.axes[controllerMap[stick + "-stick-" + axes]];
+  }
+
+  return emulatedValue;
+};
 
 export const translateGamepad = (gamepad) => {
   let newGPState = {
@@ -65,10 +98,10 @@ export const translateGamepad = (gamepad) => {
     r_stick: gamepad.buttons[controllerMap.r_stick].pressed,
     l_stick: gamepad.buttons[controllerMap.l_stick].pressed,
     //add logic here to emulate joysticks.
-    "right-stick-x": gamepad.axes[controllerMap["right-stick-x"]],
-    "right-stick-y": gamepad.axes[controllerMap["right-stick-y"]],
-    "left-stick-x": gamepad.axes[controllerMap["left-stick-x"]],
-    "left-stick-y": gamepad.axes[controllerMap["left-stick-y"]],
+    "right-stick-x": calcJoystick("right", "x", gamepad),
+    "right-stick-y": calcJoystick("right", "y", gamepad),
+    "left-stick-x": calcJoystick("left", "x", gamepad),
+    "left-stick-y": calcJoystick("left", "y", gamepad),
   };
 
   updateGamepadState(newGPState);
@@ -119,7 +152,7 @@ const updateGamepadState = (newGPState) => {
   if (commands.length > 0) sendCommand(commands.join("&"));
 };
 
-export const bindControl = (key, button) => {
+export const setBind = (key, button) => {
   controllerMap[key] = button;
 };
 

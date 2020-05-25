@@ -9,5 +9,10 @@
 .Row {
     display: flex;
     flex-direction: row;
-    justify-content: space-evenly;
+    justify-content: center;
+    align-items: center;
+}
+
+.RowSelect {
+    margin: 1rem;
 }

@@ -56,6 +56,8 @@ const StreamEmbed = (props) => {
         </iframe>
       );
       break;
+    default:
+      break;
   }
   return stream;
 };

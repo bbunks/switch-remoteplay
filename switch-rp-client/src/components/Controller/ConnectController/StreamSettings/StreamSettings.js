@@ -13,6 +13,7 @@ const StreamSettings = (props) => {
       >
         <option value="twitch">Twitch</option>
         <option value="mixer">Mixer</option>
+        <option value="none">None</option>
       </select>
       <h3>Channel</h3>
       <input

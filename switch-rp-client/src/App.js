@@ -42,13 +42,16 @@ const App = (props) => {
     [activeController]
   );
 
+  //the gamepad poll using animation frames
   const pollGamepads = useCallback(() => {
+    //get the list of all active gamepads
     let gamepads = navigator.getGamepads
       ? navigator.getGamepads()
       : navigator.webkitGetGamepads
       ? navigator.webkitGetGamepads()
       : [];
 
+    //destructures the controlers index and id
     let { index, id } = controllerList.find(
       (i) => i.index === activeController
     );
@@ -67,27 +70,12 @@ const App = (props) => {
     pollRef = requestAnimationFrame(pollGamepads);
   }, [activeController]);
 
-  //on load
+  //adds an event listener to check for new gamepads
   useEffect(() => {
     window.addEventListener("gamepadconnected", addController);
   }, []);
 
-  useEffect(() => {
-    if (activeController !== -1) {
-      console.log(
-        "Polling " + controllerList.find((i) => i.index === activeController).id
-      );
-      pollRef = requestAnimationFrame(pollGamepads);
-    }
-    return () => {
-      console.log(
-        "Stopped polling " +
-          controllerList.find((i) => i.index === activeController).id
-      );
-      cancelAnimationFrame(pollRef);
-    };
-  }, [pollGamepads]);
-
+  //adds an event listener to check for removed gamepads
   useEffect(() => {
     window.addEventListener("gamepaddisconnected", removeController);
 
@@ -95,6 +83,26 @@ const App = (props) => {
       window.removeEventListener("gamepaddisconnected", removeController);
     };
   }, [removeController]);
+
+  //Starts a poll for gamepad whenever it is selected from the drop down menu
+  useEffect(() => {
+    //the keyboard is -1 so we don't want to poll a keyboard
+    if (activeController !== -1) {
+      console.log(
+        "Polling " + controllerList.find((i) => i.index === activeController).id
+      );
+      pollRef = requestAnimationFrame(pollGamepads);
+    }
+
+    //tells the poll to stop when a new controller is selected.
+    return () => {
+      console.log(
+        "Stopped polling " +
+          controllerList.find((i) => i.index === activeController).id
+      );
+      cancelAnimationFrame(pollRef);
+    };
+  }, [pollGamepads, activeController]);
 
   return (
     <div className={classes.App}>
