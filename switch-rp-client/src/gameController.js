@@ -15,6 +15,8 @@ let controllerMap = {
   l: 6,
   start: 9,
   select: 8,
+  r_stick: 11,
+  l_stick: 10,
   "right-stick-x": 2,
   "right-stick-y": 3,
   "left-stick-x": 0,
@@ -36,6 +38,8 @@ let gamepadState = {
   l: false,
   start: false,
   select: false,
+  r_stick: false,
+  l_stick: false,
   "right-stick-x": 0,
   "right-stick-y": 0,
   "left-stick-x": 0,
@@ -58,6 +62,8 @@ export const translateGamepad = (gamepad) => {
     l: gamepad.buttons[controllerMap.l].pressed,
     start: gamepad.buttons[controllerMap.start].pressed,
     select: gamepad.buttons[controllerMap.select].pressed,
+    r_stick: gamepad.buttons[controllerMap.r_stick].pressed,
+    l_stick: gamepad.buttons[controllerMap.l_stick].pressed,
     //add logic here to emulate joysticks.
     "right-stick-x": gamepad.axes[controllerMap["right-stick-x"]],
     "right-stick-y": gamepad.axes[controllerMap["right-stick-y"]],
@@ -75,19 +81,37 @@ const updateGamepadState = (newGPState) => {
   Object.keys(gamepadState).forEach((key) => {
     if (newGPState[key] !== gamepadState[key]) {
       changes.push({ key: key, value: newGPState[key] });
+      gamepadState[key] = newGPState[key];
     }
   });
 
-  gamepadState = newGPState;
-
   changes.forEach((change) => {
-    if (change.key.search("stick") === -1) {
-      let command = change.key;
-      if (change.value) {
+    //checks if the change was on a button
+    const { key, value } = change;
+    if (key.search("-stick") === -1) {
+      let command = key;
+      if (value) {
         command += " d";
       } else {
         command += " u";
       }
+      sendCommand(command);
+    } else {
+      let command = "s ";
+
+      if (key.search("left") >= 0) {
+        command += "l ";
+      } else if (key.search("right") >= 0) {
+        command += "r ";
+      }
+
+      if (key.search("x") >= 0) {
+        command += "h ";
+      } else if (key.search("y") >= 0) {
+        command += "v ";
+      }
+
+      command += Math.round(value * 10) / 10;
       sendCommand(command);
     }
   });

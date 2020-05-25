@@ -5,3 +5,7 @@
     border-radius: 50%;
     margin: 1rem auto;
 }
+
+.Pressed {
+    background-color: #999;
+}

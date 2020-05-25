@@ -30,12 +30,12 @@ function MapManager(props) {
       </div>
       <div className={classes.Row}>
         <div className={classes.ButtonGroup}>
-          <Bind label="Left Trigger" value={controllerMap.lt} />
-          <Bind label="Left Bumper" value={controllerMap.lb} />
+          <Bind label="Left Trigger" value={controllerMap.l} />
+          <Bind label="Left Bumper" value={controllerMap.zl} />
         </div>
         <div className={classes.ButtonGroup}>
-          <Bind label="Right Trigger" value={controllerMap.rt} />
-          <Bind label="Right Bumper" value={controllerMap.rb} />
+          <Bind label="Right Trigger" value={controllerMap.r} />
+          <Bind label="Right Bumper" value={controllerMap.zr} />
         </div>
       </div>
     </div>

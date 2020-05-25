@@ -14,6 +14,7 @@ const Controller = (props) => {
         <Joystick
           x={props.controllerState["left-stick-x"]}
           y={props.controllerState["left-stick-y"]}
+          pressed={props.controllerState["l_stick"]}
         />
         <Diamond
           buttons={[
@@ -49,6 +50,7 @@ const Controller = (props) => {
         <Joystick
           x={props.controllerState["right-stick-x"]}
           y={props.controllerState["right-stick-y"]}
+          pressed={props.controllerState["r_stick"]}
         />
       </div>
     </div>
