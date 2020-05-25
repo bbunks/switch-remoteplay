@@ -2,8 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import classes from "./App.module.css";
 import Header from "./components/Header/Header";
 import Controller from "./components/Controller/Controller";
-import ControllerConfig from "./components/ControllerConfig/ControllerConfig";
-import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
+import { translateGamepad } from "./gameController";
 
 const App = () => {
   const [controllerList, setControllerList] = useState([
@@ -13,7 +12,8 @@ const App = () => {
     },
   ]);
   const [activeController, setActiveController] = useState(-1);
-  const [controllerState, setControllerState] = useState({ timestamp: 0 });
+  const [controllerState, setControllerState] = useState({});
+  const [timestamp, setTimestamp] = useState(0);
   let pollRef;
 
   //Handles the Controllers Connection
@@ -53,7 +53,8 @@ const App = () => {
     if (gamepads[index]) {
       setControllerState((prevState) => {
         if (prevState.timestamp !== gamepads[index].timestamp) {
-          return gamepads[index];
+          setTimestamp((prevTimestamp) => gamepads[index].timestamp);
+          return translateGamepad(gamepads[index]);
         } else {
           return prevState;
         }
@@ -93,22 +94,15 @@ const App = () => {
   }, [removeController]);
 
   return (
-    <Router>
-      <div className={classes.App}>
-        <Header />
-        <button onClick={(e) => console.log(activeController)}></button>
-        <Controller
-          controllerList={controllerList}
-          activeController={activeController}
-          setActiveController={setActiveController}
-        />
-        <Switch>
-          <Route path="/controls">
-            <ControllerConfig />
-          </Route>
-        </Switch>
-      </div>
-    </Router>
+    <div className={classes.App}>
+      <Header />
+      <Controller
+        controllerList={controllerList}
+        activeController={activeController}
+        setActiveController={setActiveController}
+        controllerState={controllerState}
+      />
+    </div>
   );
 };
 

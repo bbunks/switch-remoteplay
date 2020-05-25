@@ -7,7 +7,6 @@ const Header = (props) => {
     <div>
       <header className={classes.Header}>
         <p>Remote Play Switch</p>
-        <button>Set Binds</button>
       </header>
     </div>
   );

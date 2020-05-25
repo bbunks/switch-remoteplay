@@ -18,3 +18,17 @@
 .ConnectController hr {
     width: 90%;
 }
+
+.ConnectController select, .ConnectController option {
+    overflow: hidden;
+    white-space:nowrap;
+    text-overflow:ellipsis;
+    max-width: 28rem;
+}
+
+.Row {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: baseline;
+}

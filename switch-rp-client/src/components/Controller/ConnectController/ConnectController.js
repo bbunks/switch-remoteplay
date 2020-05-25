@@ -1,8 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import classes from "./ConnectController.module.css";
 import { setConnection, disconnectSocket } from "../../../socketio";
+import MapManager from "./MapManager/MapManager";
 
 const ConnectController = (props) => {
+  const [showMapping, setShowMapping] = useState(false);
+
   //Defining how to connect
   const connect = () => {
     props.setConnectionStatus("connecting");
@@ -72,8 +75,9 @@ const ConnectController = (props) => {
       <h2>Connection</h2>
       <hr />
       {jsx}
-      <h2>Controller</h2>
+      <h2>Controls</h2>
       <hr />
+      <h3>Controller</h3>
       <select
         value={props.activeController.index}
         onChange={(e) => props.setActiveController(parseInt(e.target.value))}
@@ -86,6 +90,13 @@ const ConnectController = (props) => {
           );
         })}
       </select>
+      <div className={classes.Row}>
+        <h3>Controller Mapping</h3>
+        <button onClick={() => setShowMapping(!showMapping)}>
+          {showMapping ? "-" : "+"}
+        </button>
+      </div>
+      {showMapping ? <MapManager /> : null}
     </div>
   );
 };
