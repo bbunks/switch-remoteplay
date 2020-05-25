@@ -1,8 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import classes from "./ConnectController.module.css";
 import { setConnection, disconnectSocket } from "../../../socketio";
+import MapManager from "./MapManager/MapManager";
 
 const ConnectController = (props) => {
+  const [showMapping, setShowMapping] = useState(false);
 
   //Defining how to connect
   const connect = () => {
@@ -20,32 +22,32 @@ const ConnectController = (props) => {
     props.setConnectionStatus("disconnected");
   };
 
-  //Determining what to render depending on the connection state 
+  //Determining what to render depending on the connection state
   let jsx = null;
   switch (props.connectionStatus) {
     case "connecting":
       jsx = (
-        <div className={classes.ConnectController}>
+        <>
           <h3>
             Connecting to {props.hostname}:{props.port}...
           </h3>
           <button onClick={disconnect}>Cancel</button>
-        </div>
+        </>
       );
       break;
     case "connected":
       jsx = (
-        <div className={classes.ConnectController}>
+        <>
           <h3>
             Connected to {props.ip}:{props.port}
           </h3>
           <button onClick={disconnect}>Disconnect</button>
-        </div>
+        </>
       );
       break;
     default:
       jsx = (
-        <div className={classes.ConnectController}>
+        <>
           <h3>Hostname</h3>
           <input
             value={props.hostname}
@@ -64,11 +66,39 @@ const ConnectController = (props) => {
           />
 
           <button onClick={connect}>Connect</button>
-        </div>
+        </>
       );
       break;
   }
-  return jsx;
+  return (
+    <div className={classes.ConnectController}>
+      <h2>Connection</h2>
+      <hr />
+      {jsx}
+      <h2>Controls</h2>
+      <hr />
+      <h3>Controller</h3>
+      <select
+        value={props.activeController.index}
+        onChange={(e) => props.setActiveController(parseInt(e.target.value))}
+      >
+        {props.controllerList.map((i) => {
+          return (
+            <option key={i.index} value={i.index}>
+              {i.id}
+            </option>
+          );
+        })}
+      </select>
+      <div className={classes.Row}>
+        <h3>Controller Mapping</h3>
+        <button onClick={() => setShowMapping(!showMapping)}>
+          {showMapping ? "-" : "+"}
+        </button>
+      </div>
+      {showMapping ? <MapManager /> : null}
+    </div>
+  );
 };
 
 export default ConnectController;

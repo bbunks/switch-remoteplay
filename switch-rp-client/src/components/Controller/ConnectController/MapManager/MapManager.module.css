@@ -1,0 +1,13 @@
+.MapManager {
+}
+
+.ButtonGroup {
+    display: flex;
+    flex-direction: column;
+}
+
+.Row {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+}

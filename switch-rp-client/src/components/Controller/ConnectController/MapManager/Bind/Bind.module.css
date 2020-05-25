@@ -1,0 +1,25 @@
+.Bind {
+    display: flex;
+    justify-content: center;
+}
+
+.ColContainer {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    padding: 0 1rem;
+}
+
+.ColContainer * {
+    flex-grow: 0;
+}
+
+.ColContainer h4 {
+    min-width:4rem;
+    text-align: center;
+}
+
+.ColContainer input {
+    max-width:4rem;
+    text-align: center;
+}

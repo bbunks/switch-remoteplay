@@ -14,3 +14,8 @@
 .Button h1 {
     text-align: center;
 }
+
+.Pressed {
+    background-color: #999;
+    color: #111;
+}
