@@ -8,17 +8,17 @@ const Diamond = (props) => {
     <div className={classes.Diamond}>
       <div>
         <Blank />
-        <Button buttonName={props.buttons[3]} />
+        <Button button={props.buttons[3]} />
         <Blank />
       </div>
       <div>
-        <Button buttonName={props.buttons[2]} />
+        <Button button={props.buttons[2]} />
         <Blank />
-        <Button buttonName={props.buttons[1]} />
+        <Button button={props.buttons[1]} />
       </div>
       <div>
         <Blank />
-        <Button buttonName={props.buttons[0]} />
+        <Button button={props.buttons[0]} />
         <Blank />
       </div>
     </div>

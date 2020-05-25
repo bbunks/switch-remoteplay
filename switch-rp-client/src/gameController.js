@@ -15,8 +15,8 @@ let controllerMap = {
   select: 8,
   "right-stick-x": 2,
   "right-stick-y": 3,
-  "left-stick-x": 1,
-  "left-stick-y": 0,
+  "left-stick-x": 0,
+  "left-stick-y": 1,
 };
 
 export const translateGamepad = (gamepad) => {
