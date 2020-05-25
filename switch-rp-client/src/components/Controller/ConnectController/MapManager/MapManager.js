@@ -1,63 +1,41 @@
 import React, { useState } from "react";
 import classes from "./MapManager.module.css";
 import Bind from "./Bind/Bind";
+import { getControllerMap } from "../../../../gameController";
 
 function MapManager(props) {
-  const [controllerMap, setContollerMap] = useState({
-    a: 0,
-    b: 0,
-    x: 0,
-    y: 0,
-    up: 0,
-    down: 0,
-    right: 0,
-    left: 0,
-    rb: 0,
-    lb: 0,
-    rt: 0,
-    lt: 0,
-    start: 0,
-    select: 0,
-    "right-stick-x-left": 0,
-    "right-stick-x-right": 0,
-    "right-stick-y-up": 0,
-    "right-stick-y-down": 0,
-    "left-stick-x-left": 0,
-    "left-stick-y-right": 0,
-    "left-stick-x-up": 0,
-    "left-stick-y-down": 0,
-  });
+  let controllerMap = getControllerMap();
 
   return (
     <div className={classes.MapManager}>
       <div className={classes.Row}>
         <div className={classes.ButtonGroup}>
-          <Bind label="A" />
-          <Bind label="B" />
-          <Bind label="X" />
-          <Bind label="Y" />
+          <Bind label="A" value={controllerMap.a} />
+          <Bind label="B" value={controllerMap.b} />
+          <Bind label="X" value={controllerMap.x} />
+          <Bind label="Y" value={controllerMap.y} />
         </div>
         <div className={classes.ButtonGroup}>
-          <Bind label="Up" />
-          <Bind label="Down" />
-          <Bind label="Left" />
-          <Bind label="Right" />
+          <Bind label="Up" value={controllerMap.up} />
+          <Bind label="Down" value={controllerMap.down} />
+          <Bind label="Left" value={controllerMap.left} />
+          <Bind label="Right" value={controllerMap.right} />
         </div>
       </div>
       <div className={classes.ButtonGroup}>
-        <Bind label="Left Stick X" />
-        <Bind label="Left Stick Y" />
-        <Bind label="Right Stick X" />
-        <Bind label="Right Stick Y" />
+        <Bind label="Left Stick X" value={controllerMap["left-stick-x"]} />
+        <Bind label="Left Stick Y" value={controllerMap["left-stick-y"]} />
+        <Bind label="Right Stick X" value={controllerMap["right-stick-x"]} />
+        <Bind label="Right Stick Y" value={controllerMap["right-stick-y"]} />
       </div>
       <div className={classes.Row}>
         <div className={classes.ButtonGroup}>
-          <Bind label="Left Trigger" />
-          <Bind label="Left Bumper" />
+          <Bind label="Left Trigger" value={controllerMap.lt} />
+          <Bind label="Left Bumper" value={controllerMap.lb} />
         </div>
         <div className={classes.ButtonGroup}>
-          <Bind label="Right Trigger" />
-          <Bind label="Right Bumper" />
+          <Bind label="Right Trigger" value={controllerMap.rt} />
+          <Bind label="Right Bumper" value={controllerMap.rb} />
         </div>
       </div>
     </div>

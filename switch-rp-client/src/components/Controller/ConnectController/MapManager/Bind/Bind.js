@@ -8,7 +8,7 @@ function Bind(props) {
         <h4>{props.label}</h4>
       </div>
       <div className={classes.ColContainer}>
-        <input></input>
+        <input value={props.value} />
       </div>
     </div>
   );
