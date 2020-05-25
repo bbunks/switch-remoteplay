@@ -1,23 +1,29 @@
-//this is used to generate a controller throughout the code as needed. This is not the current controller state
-export let controllerState = {
-  a: false,
-  b: false,
-  x: false,
-  y: false,
-  up: false,
-  down: false,
-  right: false,
-  left: false,
-  rb: false,
-  lb: false,
-  rt: false,
-  lt: false,
-  start: false,
-  select: false,
-  "right-stick-x": 0.0,
-  "right-stick-y": 0.0,
-  "left-stick-x": 0.0,
-  "left-stick-y": 0.0,
+const initiateControllerPoll = () => {};
+
+let controllerState = null;
+
+export const pollGamepads = (
+  activeController,
+  controllerList,
+  pollRef
+) => () => {
+  let gamepads = navigator.getGamepads
+    ? navigator.getGamepads()
+    : navigator.webkitGetGamepads
+    ? navigator.webkitGetGamepads()
+    : [];
+
+  let { index, id } = controllerList.find((i) => i.index === activeController);
+
+  console.log(gamepads[index]);
+
+  if (gamepads[index]) {
+    controllerState = gamepads[index];
+  }
+
+  pollRef = requestAnimationFrame(
+    pollGamepads(activeController, controllerList, pollRef)
+  );
 };
 
 let controllerMap = {

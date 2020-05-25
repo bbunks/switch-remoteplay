@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import classes from "./App.module.css";
 import Header from "./components/Header/Header";
 import Controller from "./components/Controller/Controller";
@@ -8,13 +8,13 @@ import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 const App = () => {
   const [controllerList, setControllerList] = useState([
     {
-      index: "-1",
+      index: -1,
       id: "Keyboard",
     },
   ]);
   const [activeController, setActiveController] = useState(-1);
-  const [controllerState, setControllerState] = useState(null);
-  const [activePoll, setActivePoll] = useState(0);
+  const [controllerState, setControllerState] = useState({ timestamp: 0 });
+  let pollRef;
 
   //Handles the Controllers Connection
   const addController = (e) => {
@@ -22,7 +22,7 @@ const App = () => {
     setControllerList((prevControllerList) => [
       ...prevControllerList,
       {
-        index: e.gamepad.index.toString(),
+        index: e.gamepad.index,
         id: e.gamepad.id,
       },
     ]);
@@ -31,20 +31,58 @@ const App = () => {
   //Handles the Controllers Disconnect
   const removeController = useCallback(
     (e) => {
-      console.log(activeController + typeof activeController);
-      console.log(e.gamepad.index + typeof e.gamepad.index);
       if (activeController === e.gamepad.index) setActiveController(-1); //If the controller is disconnected, set the active controller to the keyboard
       setControllerList((prevControllerList) => [
-        ...prevControllerList.filter((gp) => gp.index != e.gamepad.index),
+        ...prevControllerList.filter((gp) => gp.index !== e.gamepad.index),
       ]);
     },
     [activeController]
   );
 
+  const pollGamepads = useCallback(() => {
+    let gamepads = navigator.getGamepads
+      ? navigator.getGamepads()
+      : navigator.webkitGetGamepads
+      ? navigator.webkitGetGamepads()
+      : [];
+
+    let { index, id } = controllerList.find(
+      (i) => i.index === activeController
+    );
+
+    if (gamepads[index]) {
+      setControllerState((prevState) => {
+        if (prevState.timestamp !== gamepads[index].timestamp) {
+          return gamepads[index];
+        } else {
+          return prevState;
+        }
+      });
+    }
+
+    pollRef = requestAnimationFrame(pollGamepads);
+  }, [activeController]);
+
   //on load
   useEffect(() => {
     window.addEventListener("gamepadconnected", addController);
   }, []);
+
+  useEffect(() => {
+    if (activeController !== -1) {
+      console.log(
+        "Polling " + controllerList.find((i) => i.index === activeController).id
+      );
+      pollRef = requestAnimationFrame(pollGamepads);
+    }
+    return () => {
+      console.log(
+        "Stopped polling " +
+          controllerList.find((i) => i.index === activeController).id
+      );
+      cancelAnimationFrame(pollRef);
+    };
+  }, [pollGamepads]);
 
   useEffect(() => {
     window.addEventListener("gamepaddisconnected", removeController);
@@ -58,6 +96,7 @@ const App = () => {
     <Router>
       <div className={classes.App}>
         <Header />
+        <button onClick={(e) => console.log(activeController)}></button>
         <Controller
           controllerList={controllerList}
           activeController={activeController}
