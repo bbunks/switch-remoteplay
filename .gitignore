@@ -131,3 +131,4 @@ dmypy.json
 # node stuff
 switch-rp-client/node_modules
 switch-rp-client/yarn.lock
+switch-rp-client/build

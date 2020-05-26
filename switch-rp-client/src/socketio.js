@@ -3,7 +3,7 @@ const io = require("socket.io-client");
 let socket;
 
 export const setConnection = (ip, onConnect, onDisconnect) => {
-  let parsedIP = "https://" + ip.replace("http://", "").replace("https://", "");
+  let parsedIP = "http://" + ip.replace("http://", "").replace("https://", "");
   socket = io(parsedIP);
 
   socket.on("connect", onConnect);
