@@ -14,12 +14,15 @@ from switchremoteplay.controller import SwitchController
 
 logger = logging.getLogger('switchremoteplay')
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='../../swtich-rp-client/build', static_url_path='/')
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY') or 'asdasdasdf'
 socketio = SocketIO(app, cors_allowed_origins='*')
 
 controller: Optional[SwitchController] = None
 
+@app.route('/')
+def my_index():
+    return app.send_static_file('index.html')
 
 @socketio.on('connect')
 def test_connect():
