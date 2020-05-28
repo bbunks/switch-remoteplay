@@ -49,7 +49,7 @@ const StreamEmbed = (props) => {
             props.channel +
             "?disableLowLatency=0"
           }
-          width="100%"
+          width="99.5%"
           height="100%"
         >
           {" "}

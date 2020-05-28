@@ -104,13 +104,13 @@ function MapManager(props) {
             setToBind={setButtonBindTrigger}
           />
           <Bind
-            label="Left Trigger"
-            buttonKey="l"
+            label="Left Bumper"
+            buttonKey="zl"
             setToBind={setButtonBindTrigger}
           />
           <Bind
-            label="Left Bumper"
-            buttonKey="zl"
+            label="Left Trigger"
+            buttonKey="l"
             setToBind={setButtonBindTrigger}
           />
         </div>
@@ -121,13 +121,13 @@ function MapManager(props) {
             setToBind={setButtonBindTrigger}
           />
           <Bind
-            label="Right Trigger"
-            buttonKey="r"
+            label="Right Bumper"
+            buttonKey="zr"
             setToBind={setButtonBindTrigger}
           />
           <Bind
-            label="Right Bumper"
-            buttonKey="zr"
+            label="Right Trigger"
+            buttonKey="r"
             setToBind={setButtonBindTrigger}
           />
         </div>

@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import classes from "./ConnectionSettings.module.css";
 import { setConnection, disconnectSocket } from "../../../../socketio";
+import useStickyState from "../../../../customHooks/stickyState";
 
 const ConnectionSettings = (props) => {
   const [connectionStatus, setConnectionStatus] = useState("");
-  const [hostname, setHostname] = useState("127.0.0.1");
-  const [port, setPort] = useState("5000");
+  const [hostname, setHostname] = useStickyState("127.0.0.1", "hostname");
+  const [port, setPort] = useStickyState("5000", "port");
   //Defining how to connect
   const connect = () => {
     setConnectionStatus("connecting");

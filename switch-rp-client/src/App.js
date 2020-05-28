@@ -87,7 +87,10 @@ const App = (props) => {
   //Starts a poll for gamepad whenever it is selected from the drop down menu
   useEffect(() => {
     //the keyboard is -1 so we don't want to poll a keyboard
-    setActiveGamepad(activeController, controllerList.find((i) => i.index === activeController).id)
+    setActiveGamepad(
+      activeController,
+      controllerList.find((i) => i.index === activeController).id
+    );
     if (activeController !== -1) {
       console.log(
         "Polling " + controllerList.find((i) => i.index === activeController).id
