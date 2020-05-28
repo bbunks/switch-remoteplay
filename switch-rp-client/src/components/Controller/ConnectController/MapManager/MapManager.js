@@ -49,12 +49,6 @@ function MapManager(props) {
     <div className={classes.MapManager}>
       <div className={classes.Row}>
         <div className={classes.ButtonGroup}>
-          <Bind label="A" buttonKey="a" setToBind={setButtonBindTrigger} />
-          <Bind label="B" buttonKey="b" setToBind={setButtonBindTrigger} />
-          <Bind label="X" buttonKey="x" setToBind={setButtonBindTrigger} />
-          <Bind label="Y" buttonKey="y" setToBind={setButtonBindTrigger} />
-        </div>
-        <div className={classes.ButtonGroup}>
           <Bind label="Up" buttonKey="up" setToBind={setButtonBindTrigger} />
           <Bind
             label="Down"
@@ -71,6 +65,12 @@ function MapManager(props) {
             buttonKey="right"
             setToBind={setButtonBindTrigger}
           />
+        </div>
+        <div className={classes.ButtonGroup}>
+          <Bind label="A" buttonKey="a" setToBind={setButtonBindTrigger} />
+          <Bind label="B" buttonKey="b" setToBind={setButtonBindTrigger} />
+          <Bind label="X" buttonKey="x" setToBind={setButtonBindTrigger} />
+          <Bind label="Y" buttonKey="y" setToBind={setButtonBindTrigger} />
         </div>
       </div>
       <div className={classes.ButtonGroup}>
