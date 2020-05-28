@@ -2,8 +2,14 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import classes from "./App.module.css";
 import Header from "./components/Header/Header";
 import Controller from "./components/Controller/Controller";
-import { translateGamepad, setActiveGamepad } from "./gameController";
+import {
+  translateGamepad,
+  setActiveGamepad,
+  pressKey,
+  releaseKey,
+} from "./gameController";
 import StreamEmbed from "./components/StreamEmbed/StreamEmbed";
+import useStickyState from "./customHooks/stickyState";
 
 const App = (props) => {
   const [controllerList, setControllerList] = useState([
@@ -14,8 +20,8 @@ const App = (props) => {
   ]);
   const [activeController, setActiveController] = useState(-1);
   const [controllerState, setControllerState] = useState({});
-  const [channel, setChannel] = useState("monstercat");
-  const [platform, setPlatform] = useState("mixer");
+  const [channel, setChannel] = useStickyState("monstercat", "channel");
+  const [platform, setPlatform] = useState("none");
   const [timestamp, setTimestamp] = useState(0);
   let pollRef;
 
@@ -73,6 +79,8 @@ const App = (props) => {
   //adds an event listener to check for new gamepads
   useEffect(() => {
     window.addEventListener("gamepadconnected", addController);
+    window.addEventListener("keydown", (e) => pressKey(e, setControllerState));
+    window.addEventListener("keyup", (e) => releaseKey(e, setControllerState));
   }, []);
 
   //adds an event listener to check for removed gamepads

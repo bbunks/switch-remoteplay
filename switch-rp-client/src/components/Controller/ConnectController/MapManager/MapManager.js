@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import classes from "./MapManager.module.css";
 import Bind from "./Bind/Bind";
 import JoystickBind from "./JoystickBind/JoystickBind";
@@ -6,12 +6,28 @@ import {
   getControllerMap,
   setBind,
   getNextButton,
+  addMirrorMap,
+  removeMirrorMap,
 } from "../../../../gameController";
 
 function MapManager(props) {
-  let controllerMap = getControllerMap();
+  let [controllerMap, setControllerMap] = useState(getControllerMap());
   const [toBind, setToBind] = useState(null);
   const [emulated, setEmulated] = useState(controllerMap["emulate-joystick"]);
+
+  useEffect(() => {
+    console.log("Adding MapMirror");
+    addMirrorMap((map) => {
+      console.log(map["emulate-joystick"]);
+      setControllerMap(map);
+      setEmulated(map["emulate-joystick"]);
+    }, "MapManager");
+
+    return () => {
+      console.log("Removing MapMirror");
+      removeMirrorMap("MapManager");
+    };
+  }, []);
 
   const setButtonBindTrigger = (key, inputRef) => {
     setToBind(key);
@@ -66,7 +82,6 @@ function MapManager(props) {
             onChange={() => {
               setEmulated((prev) => {
                 setBind("emulate-joystick", !prev);
-                return !prev;
               });
             }}
           />

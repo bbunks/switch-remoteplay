@@ -29,10 +29,12 @@ let gamepadState = {
 let gamepadIndex = -1;
 let gamepadId = 0;
 let prevGamepadID;
+let mirriorFuncs = [];
 
 export const setActiveGamepad = (activeIndex, activeGamepadId) => {
   gamepadIndex = activeIndex;
   gamepadId = activeGamepadId;
+  mirriorFuncs.forEach((mirror) => mirror.func(getControllerMap()));
 };
 
 let rawGamepadState = null;
@@ -41,21 +43,30 @@ let doOnNextPress = null;
 //Returns the joysitck value after taking into account if the sticks are being emulated from buttons
 const calcJoystick = (stick, axes, gamepad) => {
   let emulatedValue = 0;
-  if (controllerMap["emulate-joystick"]) {
+  if (getControllerMap()["emulate-joystick"] && gamepadIndex !== -1) {
     let keyStr = stick + "-stick-" + axes + "-";
 
+    if (
+      getControllerMap()[keyStr + (axes === "x" ? "left" : "up")] >
+        gamepad.buttons.length ||
+      getControllerMap()[keyStr + (axes === "x" ? "right" : "down")] >
+        gamepad.buttons.length
+    ) {
+      return emulatedValue;
+    }
+
     emulatedValue += gamepad.buttons[
-      controllerMap[keyStr + (axes === "x" ? "left" : "up")]
+      getControllerMap()[keyStr + (axes === "x" ? "left" : "up")]
     ].pressed
       ? -1
       : 0;
     emulatedValue += gamepad.buttons[
-      controllerMap[keyStr + (axes === "x" ? "right" : "down")]
+      getControllerMap()[keyStr + (axes === "x" ? "right" : "down")]
     ].pressed
       ? 1
       : 0;
   } else {
-    emulatedValue = gamepad.axes[controllerMap[stick + "-stick-" + axes]];
+    emulatedValue = gamepad.axes[getControllerMap()[stick + "-stick-" + axes]];
   }
 
   return emulatedValue;
@@ -145,7 +156,6 @@ export const translateGamepad = (gamepad) => {
 //Updates a raw gamepad state used for finding the button/stick to bind to
 const updateRawGamepad = (gamepad) => {
   if (rawGamepadState === null || prevGamepadID !== gamepadId) {
-    console.log("scream");
     rawGamepadState = gamepad;
     prevGamepadID = gamepadId;
     return;
@@ -219,39 +229,146 @@ const updateGamepadState = (newGPState) => {
   if (commands.length > 0) sendCommand(commands.join("&"));
 };
 
+//setting up translation for keyboard
+const modifierKeys = ["Control", "Shift", "Alt"];
+
+export const pressKey = (e, setState) => {
+  let newGPState = gamepadState;
+  if (doOnNextPress && modifierKeys.findIndex((i) => i == e.key) === -1) {
+    doOnNextPress(e.key);
+    doOnNextPress = null;
+    return;
+  }
+
+  if (gamepadIndex === -1 && !e.repeat) {
+    Object.keys(keyboardMap).forEach((key) => {
+      if (e.key === keyboardMap[key]) {
+        console.log(key + ": " + e.key);
+        if (key.search("-stick") >= 0) {
+          //joy-stick-logic
+          let joystickKey = key.substring(0, key.lastIndexOf("-"));
+          if (key.search("-up") >= 0 || key.search("-left") >= 0) {
+            newGPState[joystickKey] -= 1;
+            setState((prev) => {
+              return { ...newGPState };
+            });
+          } else {
+            newGPState[joystickKey] += 1;
+            setState((prev) => {
+              return { ...newGPState };
+            });
+          }
+          if (newGPState[joystickKey] < -1) {
+            newGPState[joystickKey] = 0;
+          } else if (newGPState[joystickKey] > 1) {
+            newGPState[joystickKey] = 0;
+          }
+        } else {
+          newGPState[key] = true;
+          setState((prev) => {
+            return { ...newGPState };
+          });
+        }
+      }
+    });
+    updateGamepadState(newGPState);
+  }
+};
+
+export const releaseKey = (e, setState) => {
+  let newGPState = gamepadState;
+  if (gamepadIndex === -1) {
+    Object.keys(keyboardMap).forEach((key) => {
+      if (
+        e.key.toLowerCase() ===
+        (typeof keyboardMap[key] === "string"
+          ? keyboardMap[key].toLowerCase()
+          : keyboardMap[key])
+      ) {
+        if (key.search("-stick") >= 0) {
+          //joy-stick-logic
+          let joystickKey = key.substring(0, key.lastIndexOf("-"));
+          if (key.search("-up") >= 0 || key.search("-left") >= 0) {
+            if (newGPState[joystickKey] !== 0) {
+              newGPState[joystickKey] += 1;
+              setState((prev) => {
+                return { ...newGPState };
+              });
+            }
+          } else {
+            if (newGPState[joystickKey] !== 0) {
+              newGPState[joystickKey] -= 1;
+              setState((prev) => {
+                return { ...newGPState };
+              });
+            }
+          }
+          if (newGPState[joystickKey] < -1) {
+            newGPState[joystickKey] = 0;
+          } else if (newGPState[joystickKey] > 1) {
+            newGPState[joystickKey] = 0;
+          }
+        } else {
+          newGPState[key] = false;
+          setState((prev) => {
+            return { ...newGPState };
+          });
+        }
+      }
+    });
+    updateGamepadState(newGPState);
+  }
+};
+
 //This is takes a function as a parameter. When the next button is pressed, run the function and return the button key (0-16)
 export const getNextButton = (response) => {
   doOnNextPress = response;
 };
 
 export const setBind = (key, button) => {
-  console.log("Binding " + key + " to " + button);
-  controllerMap[key] = button;
+  if (gamepadIndex === -1) {
+    console.log("Binding " + key + " to " + button + " for Keyboard");
+    keyboardMap[key] = button;
+  } else {
+    console.log("Binding " + key + " to " + button + " for Gamepad");
+    controllerMap[key] = button;
+  }
+  mirriorFuncs.forEach((mirror) => mirror.func(getControllerMap()));
   localStorage.setItem("ControllerMapping", exportMapToJSON());
 };
 
-export const checkPress = (key) => {
-  let mapIndex = Object.values(controllerMap).indexOf(key);
-  let button = Object.keys(controllerMap)[mapIndex];
+export const addMirrorMap = (func, id) => {
+  mirriorFuncs.push({ id: id, func: func });
+};
 
+export const removeMirrorMap = (id) => {
+  mirriorFuncs.filter((mirror) => mirror.id !== id);
+};
+
+export const checkPress = (key) => {
+  let mapIndex = Object.values(keyboardMap).indexOf(key);
+  let button = Object.keys(keyboardMap)[mapIndex];
   return button;
 };
 
 export const exportMapToJSON = () => {
-  return JSON.stringify(controllerMap);
+  return JSON.stringify({
+    controllerMap: controllerMap,
+    keyboardMap: keyboardMap,
+  });
 };
 
 export const importMapFromJSON = (mapJSONString) => {
-  controllerMap = JSON.parse(mapJSONString);
+  let map = JSON.parse(mapJSONString);
+  controllerMap = map.controllerMap;
+  keyboardMap = map.keyboardMap;
 };
 
 export const getControllerMap = () => {
-  return controllerMap;
+  return gamepadIndex === -1 ? keyboardMap : controllerMap;
 };
-//check if we have a Map in storage, if so load it, else we will load the default.
-if (localStorage.getItem("ControllerMapping")) {
-  importMapFromJSON(localStorage.getItem("ControllerMapping"));
-} else {
+
+export const setBindsToDefault = () => {
   controllerMap = {
     a: 0,
     b: 1,
@@ -288,14 +405,14 @@ if (localStorage.getItem("ControllerMapping")) {
   };
 
   keyboardMap = {
-    a: 0,
-    b: 1,
-    x: 2,
-    y: 3,
-    up: 12,
-    down: 13,
-    left: 14,
-    right: 15,
+    a: "p",
+    b: "l",
+    x: "o",
+    y: "k",
+    up: "W",
+    down: "S",
+    left: "A",
+    right: "D",
     zr: 5,
     zl: 4,
     r: 7,
@@ -304,21 +421,29 @@ if (localStorage.getItem("ControllerMapping")) {
     minus: 8,
     r_stick: 11,
     l_stick: 10,
-    //only read if the emulated joysticks is false
+    //only read if the emulated joysticks is false This will not crash, but it wont do anything...
     "right-stick-x": 2,
     "right-stick-y": 3,
     "left-stick-x": 0,
     "left-stick-y": 1,
     //set to true for emulated joysticks
-    "emulate-joystick": false,
+    "emulate-joystick": true,
     //only read if the emulated joysticks is true
-    "right-stick-y-up": 12,
-    "right-stick-y-down": 13,
-    "right-stick-x-left": 14,
-    "right-stick-x-right": 15,
-    "left-stick-x-left": 0,
-    "left-stick-x-right": 1,
-    "left-stick-y-up": 0,
-    "left-stick-y-down": 1,
+    "right-stick-y-up": "ArrowUp",
+    "right-stick-y-down": "ArrowDown",
+    "right-stick-x-left": "ArrowLeft",
+    "right-stick-x-right": "ArrowRight",
+    "left-stick-x-left": "a",
+    "left-stick-x-right": "d",
+    "left-stick-y-up": "w",
+    "left-stick-y-down": "s",
   };
+
+  mirriorFuncs.forEach((mirror) => mirror.func(getControllerMap()));
+};
+//check if we have a Map in storage, if so load it, else we will load the default.
+if (localStorage.getItem("ControllerMapping")) {
+  importMapFromJSON(localStorage.getItem("ControllerMapping"));
+} else {
+  setBindsToDefault();
 }

@@ -32,3 +32,7 @@
     max-width:4rem;
     text-align: center;
 }
+
+.Mini input {
+    min-width:5rem;
+}
