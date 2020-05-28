@@ -20,6 +20,8 @@ let gamepadState = {
   minus: false,
   r_stick: false,
   l_stick: false,
+  home: false,
+  capture: false,
   "right-stick-x": 0,
   "right-stick-y": 0,
   "left-stick-x": 0,
@@ -243,7 +245,6 @@ export const pressKey = (e, setState) => {
   if (gamepadIndex === -1 && !e.repeat) {
     Object.keys(keyboardMap).forEach((key) => {
       if (e.key === keyboardMap[key]) {
-        console.log(key + ": " + e.key);
         if (key.search("-stick") >= 0) {
           //joy-stick-logic
           let joystickKey = key.substring(0, key.lastIndexOf("-"));
@@ -417,8 +418,10 @@ export const setBindsToDefault = () => {
     zl: 4,
     r: 7,
     l: 6,
-    plus: 9,
-    minus: 8,
+    plus: "=",
+    minus: "-",
+    capture: "End",
+    home: "Home",
     r_stick: 11,
     l_stick: 10,
     //only read if the emulated joysticks is false This will not crash, but it wont do anything...

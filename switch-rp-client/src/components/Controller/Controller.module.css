@@ -21,3 +21,62 @@
 .Right {
 
 }
+
+.LargeButton {
+    background-color: #111;
+    margin: 1rem;
+    border-radius: 10%;
+    display: flex;
+    justify-content: center;
+}
+
+.LargeButton p {
+    color: white;
+    font-weight: 700;
+    font-size: 32px;
+    margin: 0;
+    user-select: none;
+}
+
+.SmallButton {
+    background-color: #111;
+    margin: 0;
+    border-radius: 10%;
+    display: flex;
+    justify-content: center;
+    flex-grow: 1;
+}
+
+.SmallButton p {
+    color: white;
+    font-weight: 700;
+    font-size: 20px;
+    margin: 0;
+    user-select: none;
+}
+
+.Row {
+    display: flex;
+    padding: 0 1rem 2rem
+}
+
+.Symbol {
+    margin: 0;
+}
+
+.Symbol p {
+    margin: 0 1rem;
+    color: white;
+    font-weight: 900;
+    font-size: 24px;
+    user-select: none;
+}
+
+.Pressed {
+    background-color: #999;
+    color: #111;
+}
+
+.PressedAlt p {
+    color: #111;
+}

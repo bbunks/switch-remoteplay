@@ -114,6 +114,16 @@ function MapManager(props) {
       <div className={classes.Row}>
         <div className={classes.ButtonGroup}>
           <Bind
+            label="Capture"
+            buttonKey="capture"
+            setToBind={setButtonBindTrigger}
+          />
+          <Bind
+            label="Minus"
+            buttonKey="minus"
+            setToBind={setButtonBindTrigger}
+          />
+          <Bind
             label="Left Stick Click"
             buttonKey="l_stick"
             setToBind={setButtonBindTrigger}
@@ -130,6 +140,16 @@ function MapManager(props) {
           />
         </div>
         <div className={classes.ButtonGroup}>
+          <Bind
+            label="Home"
+            buttonKey="home"
+            setToBind={setButtonBindTrigger}
+          />
+          <Bind
+            label="Plus"
+            buttonKey="plus"
+            setToBind={setButtonBindTrigger}
+          />
           <Bind
             label="Right Stick Click"
             buttonKey="r_stick"
