@@ -1,5 +1,4 @@
 import React from "react";
-import classes from "./StreamSettings.module.css";
 
 const StreamSettings = (props) => {
   return (

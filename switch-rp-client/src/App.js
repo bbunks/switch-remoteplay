@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import classes from "./App.module.css";
 import Header from "./components/Header/Header";
 import Controller from "./components/Controller/Controller";
@@ -100,18 +100,13 @@ const App = (props) => {
       controllerList.find((i) => i.index === activeController).id
     );
     if (activeController !== -1) {
-      console.log(
-        "Polling " + controllerList.find((i) => i.index === activeController).id
-      );
+      //console.log("Polling " + controllerList.find((i) => i.index === activeController).id);
       pollRef = requestAnimationFrame(pollGamepads);
     }
 
     //tells the poll to stop when a new controller is selected.
     return () => {
-      console.log(
-        "Stopped polling " +
-          controllerList.find((i) => i.index === activeController).id
-      );
+      //console.log("Stopped polling " + controllerList.find((i) => i.index === activeController).id);
       cancelAnimationFrame(pollRef);
     };
   }, [pollGamepads, activeController]);

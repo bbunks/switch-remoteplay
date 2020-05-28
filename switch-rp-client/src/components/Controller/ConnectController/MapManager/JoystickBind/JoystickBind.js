@@ -1,7 +1,6 @@
-import React, { useState, useRef } from "react";
+import React from "react";
 import classes from "./JoystickBind.module.css";
 import Bind from "../Bind/Bind";
-import { getControllerMap } from "../../../../../gameController";
 
 function JoystickBind(props) {
   return (

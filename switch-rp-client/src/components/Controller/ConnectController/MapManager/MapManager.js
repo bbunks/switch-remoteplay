@@ -12,13 +12,13 @@ import {
 
 function MapManager(props) {
   let [controllerMap, setControllerMap] = useState(getControllerMap());
+  //This is here to trigger rerenders.
   const [toBind, setToBind] = useState(null);
   const [emulated, setEmulated] = useState(controllerMap["emulate-joystick"]);
 
   useEffect(() => {
-    console.log("Adding MapMirror");
+    //console.log("Adding MapMirror");
     addMirrorMap((map) => {
-      console.log(map["emulate-joystick"]);
       setControllerMap(map);
       setEmulated(map["emulate-joystick"]);
     }, "MapManager");
@@ -30,11 +30,12 @@ function MapManager(props) {
   }, []);
 
   const setButtonBindTrigger = (key, inputRef) => {
+    //This is here to trigger rerenders.
     setToBind(key);
 
     if (key) {
       getNextButton((nextButton) => {
-        console.log("Got the presses for " + key + ": " + nextButton);
+        //console.log("Got the presses for " + key + ": " + nextButton);
         setBind(key, nextButton);
         inputRef.current.blur();
       });

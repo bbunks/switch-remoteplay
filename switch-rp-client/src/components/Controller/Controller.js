@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import classes from "./Controller.module.css";
 import Joystick from "./Joystick/Joystick";
 import Diamond from "./Diamond/Diamond";

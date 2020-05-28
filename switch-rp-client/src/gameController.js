@@ -236,7 +236,7 @@ const modifierKeys = ["Control", "Shift", "Alt"];
 
 export const pressKey = (e, setState) => {
   let newGPState = gamepadState;
-  if (doOnNextPress && modifierKeys.findIndex((i) => i == e.key) === -1) {
+  if (doOnNextPress && modifierKeys.findIndex((i) => i === e.key) === -1) {
     doOnNextPress(e.key);
     doOnNextPress = null;
     return;
@@ -328,10 +328,10 @@ export const getNextButton = (response) => {
 
 export const setBind = (key, button) => {
   if (gamepadIndex === -1) {
-    console.log("Binding " + key + " to " + button + " for Keyboard");
+    //console.log("Binding " + key + " to " + button + " for Keyboard");
     keyboardMap[key] = button;
   } else {
-    console.log("Binding " + key + " to " + button + " for Gamepad");
+    //console.log("Binding " + key + " to " + button + " for Gamepad");
     controllerMap[key] = button;
   }
   mirriorFuncs.forEach((mirror) => mirror.func(getControllerMap()));

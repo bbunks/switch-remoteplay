@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import classes from "./ConnectionSettings.module.css";
 import { setConnection, disconnectSocket } from "../../../../socketio";
 import useStickyState from "../../../../customHooks/stickyState";
 

@@ -20,7 +20,7 @@ const StreamEmbed = (props) => {
         theme: "dark",
       });
     });
-  }, []);
+  }, [props.channel]);
 
   useEffect(() => {
     if (!firstUpdate.current) {

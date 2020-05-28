@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import classes from "./ConnectController.module.css";
 import StreamSettings from "./StreamSettings/StreamSettings";
 import ControllerSettings from "./ControllerSettings/ControllerSettings";
