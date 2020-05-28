@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import classes from "./JoystickBind.module.css";
+import Bind from "../Bind/Bind";
 import { getControllerMap } from "../../../../../gameController";
 
 function JoystickBind(props) {
@@ -11,35 +12,35 @@ function JoystickBind(props) {
       {props.emulated ? (
         <>
           <div className={classes.ColContainer}>
-            <p>{props.buttonKey.search("x") >= 0 ? "Left" : "Up"}</p>
-            <input
-              value={
-                getControllerMap()[
-                  props.buttonKey +
-                    (props.buttonKey.search("x") >= 0 ? "-left" : "-up")
-                ]
+            <Bind
+              small={true}
+              label={props.buttonKey.search("x") >= 0 ? "Left" : "Up"}
+              buttonKey={
+                props.buttonKey +
+                (props.buttonKey.search("x") >= 0 ? "-left" : "-up")
               }
-              onFocus={(e) => props.setToBind([props.buttonKey])}
+              setToBind={props.setToBind}
             />
           </div>
           <div className={classes.ColContainer}>
-            <p>{props.buttonKey.search("x") >= 0 ? "Right" : "Down"}</p>
-            <input
-              value={
-                getControllerMap()[
-                  props.buttonKey +
-                    (props.buttonKey.search("x") >= 0 ? "-right" : "-down")
-                ]
+            <Bind
+              small={true}
+              label={props.buttonKey.search("x") >= 0 ? "Right" : "Down"}
+              buttonKey={
+                props.buttonKey +
+                (props.buttonKey.search("x") >= 0 ? "-right" : "-down")
               }
-              onFocus={(e) => props.setToBind([props.buttonKey])}
+              setToBind={props.setToBind}
             />
           </div>
         </>
       ) : (
         <div className={classes.ColContainer}>
-          <input
-            value={getControllerMap()[props.buttonKey]}
-            onFocus={(e) => props.setToBind([props.buttonKey])}
+          <Bind
+            small={true}
+            label="Stick"
+            buttonKey={props.buttonKey}
+            setToBind={props.setToBind}
           />
         </div>
       )}

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import classes from "./App.module.css";
 import Header from "./components/Header/Header";
 import Controller from "./components/Controller/Controller";
-import { translateGamepad } from "./gameController";
+import { translateGamepad, setActiveGamepad } from "./gameController";
 import StreamEmbed from "./components/StreamEmbed/StreamEmbed";
 
 const App = (props) => {
@@ -15,7 +15,7 @@ const App = (props) => {
   const [activeController, setActiveController] = useState(-1);
   const [controllerState, setControllerState] = useState({});
   const [channel, setChannel] = useState("monstercat");
-  const [platform, setPlatform] = useState("twitch");
+  const [platform, setPlatform] = useState("mixer");
   const [timestamp, setTimestamp] = useState(0);
   let pollRef;
 
@@ -87,6 +87,7 @@ const App = (props) => {
   //Starts a poll for gamepad whenever it is selected from the drop down menu
   useEffect(() => {
     //the keyboard is -1 so we don't want to poll a keyboard
+    setActiveGamepad(activeController, controllerList.find((i) => i.index === activeController).id)
     if (activeController !== -1) {
       console.log(
         "Polling " + controllerList.find((i) => i.index === activeController).id

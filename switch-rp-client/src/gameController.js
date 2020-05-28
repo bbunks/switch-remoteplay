@@ -1,39 +1,7 @@
 import { sendCommand } from "./socketio";
 
-let controllerMap = {
-  a: 0,
-  b: 1,
-  x: 2,
-  y: 3,
-  up: 12,
-  down: 13,
-  left: 14,
-  right: 15,
-  zr: 5,
-  zl: 4,
-  r: 7,
-  l: 6,
-  plus: 9,
-  minus: 8,
-  r_stick: 11,
-  l_stick: 10,
-  //only read if the emulated joysticks is false
-  "right-stick-x": 2,
-  "right-stick-y": 3,
-  "left-stick-x": 0,
-  "left-stick-y": 1,
-  //set to true for emulated joysticks
-  "emulate-joystick": false,
-  //only read if the emulated joysticks is true
-  "right-stick-y-up": 12,
-  "right-stick-y-down": 13,
-  "right-stick-x-left": 14,
-  "right-stick-x-right": 15,
-  "left-stick-x-left": 0,
-  "left-stick-x-right": 0,
-  "left-stick-y-up": 1,
-  "left-stick-y-down": 1,
-};
+let controllerMap;
+let keyboardMap;
 
 let gamepadState = {
   a: false,
@@ -57,6 +25,20 @@ let gamepadState = {
   "left-stick-x": 0,
   "left-stick-y": 0,
 };
+
+let gamepadIndex = -1;
+let gamepadId = 0;
+let prevGamepadID;
+
+export const setActiveGamepad = (activeIndex, activeGamepadId) => {
+  gamepadIndex = activeIndex;
+  gamepadId = activeGamepadId;
+};
+
+let rawGamepadState = null;
+let doOnNextPress = null;
+
+//Returns the joysitck value after taking into account if the sticks are being emulated from buttons
 const calcJoystick = (stick, axes, gamepad) => {
   let emulatedValue = 0;
   if (controllerMap["emulate-joystick"]) {
@@ -79,24 +61,74 @@ const calcJoystick = (stick, axes, gamepad) => {
   return emulatedValue;
 };
 
+//translates a gamepad press through the map and returns a Gamepad layout.
 export const translateGamepad = (gamepad) => {
+  let maxButtonNum = gamepad.buttons.length;
   let newGPState = {
-    a: gamepad.buttons[controllerMap.a].pressed,
-    b: gamepad.buttons[controllerMap.b].pressed,
-    x: gamepad.buttons[controllerMap.x].pressed,
-    y: gamepad.buttons[controllerMap.y].pressed,
-    up: gamepad.buttons[controllerMap.up].pressed,
-    down: gamepad.buttons[controllerMap.down].pressed,
-    right: gamepad.buttons[controllerMap.right].pressed,
-    left: gamepad.buttons[controllerMap.left].pressed,
-    zr: gamepad.buttons[controllerMap.zr].pressed,
-    zl: gamepad.buttons[controllerMap.zl].pressed,
-    r: gamepad.buttons[controllerMap.r].pressed,
-    l: gamepad.buttons[controllerMap.l].pressed,
-    plus: gamepad.buttons[controllerMap.plus].pressed,
-    minus: gamepad.buttons[controllerMap.minus].pressed,
-    r_stick: gamepad.buttons[controllerMap.r_stick].pressed,
-    l_stick: gamepad.buttons[controllerMap.l_stick].pressed,
+    a:
+      controllerMap.a < maxButtonNum
+        ? gamepad.buttons[controllerMap.a].pressed
+        : false,
+    b:
+      controllerMap.b < maxButtonNum
+        ? gamepad.buttons[controllerMap.b].pressed
+        : false,
+    x:
+      controllerMap.x < maxButtonNum
+        ? gamepad.buttons[controllerMap.x].pressed
+        : false,
+    y:
+      controllerMap.y < maxButtonNum
+        ? gamepad.buttons[controllerMap.y].pressed
+        : false,
+    up:
+      controllerMap.up < maxButtonNum
+        ? gamepad.buttons[controllerMap.up].pressed
+        : false,
+    down:
+      controllerMap.down < maxButtonNum
+        ? gamepad.buttons[controllerMap.down].pressed
+        : false,
+    right:
+      controllerMap.right < maxButtonNum
+        ? gamepad.buttons[controllerMap.right].pressed
+        : false,
+    left:
+      controllerMap.left < maxButtonNum
+        ? gamepad.buttons[controllerMap.left].pressed
+        : false,
+    zr:
+      controllerMap.zr < maxButtonNum
+        ? gamepad.buttons[controllerMap.zr].pressed
+        : false,
+    zl:
+      controllerMap.zl < maxButtonNum
+        ? gamepad.buttons[controllerMap.zl].pressed
+        : false,
+    r:
+      controllerMap.r < maxButtonNum
+        ? gamepad.buttons[controllerMap.r].pressed
+        : false,
+    l:
+      controllerMap.l < maxButtonNum
+        ? gamepad.buttons[controllerMap.l].pressed
+        : false,
+    plus:
+      controllerMap.plus < maxButtonNum
+        ? gamepad.buttons[controllerMap.plus].pressed
+        : false,
+    minus:
+      controllerMap.minus < maxButtonNum
+        ? gamepad.buttons[controllerMap.minus].pressed
+        : false,
+    r_stick:
+      controllerMap.r_stick < maxButtonNum
+        ? gamepad.buttons[controllerMap.r_stick].pressed
+        : false,
+    l_stick:
+      controllerMap.l_stick < maxButtonNum
+        ? gamepad.buttons[controllerMap.l_stick].pressed
+        : false,
     //add logic here to emulate joysticks.
     "right-stick-x": calcJoystick("right", "x", gamepad),
     "right-stick-y": calcJoystick("right", "y", gamepad),
@@ -105,10 +137,44 @@ export const translateGamepad = (gamepad) => {
   };
 
   updateGamepadState(newGPState);
+  updateRawGamepad(gamepad);
 
   return newGPState;
 };
 
+//Updates a raw gamepad state used for finding the button/stick to bind to
+const updateRawGamepad = (gamepad) => {
+  if (rawGamepadState === null || prevGamepadID !== gamepadId) {
+    console.log("scream");
+    rawGamepadState = gamepad;
+    prevGamepadID = gamepadId;
+    return;
+  }
+
+  let buttonChanges = [];
+  Object.keys(gamepad.buttons).forEach((key) => {
+    if (rawGamepadState.buttons[key].value !== gamepad.buttons[key].value) {
+      buttonChanges.push({
+        key: key,
+        value: gamepad.buttons[key].value,
+      });
+    }
+  });
+
+  rawGamepadState = gamepad;
+
+  buttonChanges.forEach((change) => {
+    //checks if the change was on a button
+    const { key, value } = change;
+
+    if (doOnNextPress && value) {
+      doOnNextPress(key);
+      doOnNextPress = null;
+    }
+  });
+};
+
+//Sends commands to the API through the socket
 const updateGamepadState = (newGPState) => {
   let changes = [];
   Object.keys(gamepadState).forEach((key) => {
@@ -123,6 +189,7 @@ const updateGamepadState = (newGPState) => {
     let command;
     //checks if the change was on a button
     const { key, value } = change;
+
     if (key.search("-stick") === -1) {
       command = key;
       if (value) {
@@ -152,8 +219,15 @@ const updateGamepadState = (newGPState) => {
   if (commands.length > 0) sendCommand(commands.join("&"));
 };
 
+//This is takes a function as a parameter. When the next button is pressed, run the function and return the button key (0-16)
+export const getNextButton = (response) => {
+  doOnNextPress = response;
+};
+
 export const setBind = (key, button) => {
+  console.log("Binding " + key + " to " + button);
   controllerMap[key] = button;
+  localStorage.setItem("ControllerMapping", exportMapToJSON());
 };
 
 export const checkPress = (key) => {
@@ -161,10 +235,6 @@ export const checkPress = (key) => {
   let button = Object.keys(controllerMap)[mapIndex];
 
   return button;
-};
-
-export const pressButton = (button) => {
-  //to be written
 };
 
 export const exportMapToJSON = () => {
@@ -178,3 +248,77 @@ export const importMapFromJSON = (mapJSONString) => {
 export const getControllerMap = () => {
   return controllerMap;
 };
+//check if we have a Map in storage, if so load it, else we will load the default.
+if (localStorage.getItem("ControllerMapping")) {
+  importMapFromJSON(localStorage.getItem("ControllerMapping"));
+} else {
+  controllerMap = {
+    a: 0,
+    b: 1,
+    x: 2,
+    y: 3,
+    up: 12,
+    down: 13,
+    left: 14,
+    right: 15,
+    zr: 5,
+    zl: 4,
+    r: 7,
+    l: 6,
+    plus: 9,
+    minus: 8,
+    r_stick: 11,
+    l_stick: 10,
+    //only read if the emulated joysticks is false
+    "right-stick-x": 2,
+    "right-stick-y": 3,
+    "left-stick-x": 0,
+    "left-stick-y": 1,
+    //set to true for emulated joysticks
+    "emulate-joystick": false,
+    //only read if the emulated joysticks is true
+    "right-stick-y-up": 12,
+    "right-stick-y-down": 13,
+    "right-stick-x-left": 14,
+    "right-stick-x-right": 15,
+    "left-stick-x-left": 0,
+    "left-stick-x-right": 1,
+    "left-stick-y-up": 0,
+    "left-stick-y-down": 1,
+  };
+
+  keyboardMap = {
+    a: 0,
+    b: 1,
+    x: 2,
+    y: 3,
+    up: 12,
+    down: 13,
+    left: 14,
+    right: 15,
+    zr: 5,
+    zl: 4,
+    r: 7,
+    l: 6,
+    plus: 9,
+    minus: 8,
+    r_stick: 11,
+    l_stick: 10,
+    //only read if the emulated joysticks is false
+    "right-stick-x": 2,
+    "right-stick-y": 3,
+    "left-stick-x": 0,
+    "left-stick-y": 1,
+    //set to true for emulated joysticks
+    "emulate-joystick": false,
+    //only read if the emulated joysticks is true
+    "right-stick-y-up": 12,
+    "right-stick-y-down": 13,
+    "right-stick-x-left": 14,
+    "right-stick-x-right": 15,
+    "left-stick-x-left": 0,
+    "left-stick-x-right": 1,
+    "left-stick-y-up": 0,
+    "left-stick-y-down": 1,
+  };
+}

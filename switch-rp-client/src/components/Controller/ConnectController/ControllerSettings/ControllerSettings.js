@@ -22,6 +22,9 @@ function ControllerSettings(props) {
           );
         })}
       </select>
+      <p className={classes.SubNote}>
+        If your controller is not showing, press a button on the controller
+      </p>
       <div className={classes.Row}>
         <h3>Controller Mapping</h3>
         <button onClick={() => setShowMapping(!showMapping)}>

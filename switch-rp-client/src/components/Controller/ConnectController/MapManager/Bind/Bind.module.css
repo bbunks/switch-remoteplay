@@ -3,6 +3,10 @@
     justify-content: center;
 }
 
+.Mini {
+    flex-direction: column;
+}
+
 .ColContainer {
     display: flex;
     flex-direction: column;
@@ -15,6 +19,11 @@
 }
 
 .ColContainer h4 {
+    min-width:4rem;
+    text-align: center;
+}
+
+.Mini p {
     min-width:4rem;
     text-align: center;
 }

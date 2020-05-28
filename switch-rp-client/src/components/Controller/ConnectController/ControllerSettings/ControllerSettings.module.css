@@ -4,3 +4,7 @@
     justify-content: space-between;
     align-items: baseline;
 }
+
+.SubNote {
+    font-size: .65rem;
+}

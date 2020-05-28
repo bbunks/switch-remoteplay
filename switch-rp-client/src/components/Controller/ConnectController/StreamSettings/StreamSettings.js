@@ -11,7 +11,6 @@ const StreamSettings = (props) => {
         value={props.platform}
         onChange={(e) => props.setPlatform(e.target.value)}
       >
-        <option value="twitch">Twitch</option>
         <option value="mixer">Mixer</option>
         <option value="none">None</option>
       </select>
