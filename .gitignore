@@ -8,7 +8,6 @@ __pycache__/
 
 # Distribution / packaging
 .Python
-build/
 develop-eggs/
 dist/
 downloads/
@@ -127,8 +126,3 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-
-# node stuff
-switch-rp-client/node_modules
-switch-rp-client/yarn.lock
-switch-rp-client/build
