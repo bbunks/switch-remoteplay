@@ -190,9 +190,32 @@ const updateRawGamepad = (gamepad) => {
 const updateGamepadState = (newGPState) => {
   let changes = [];
   Object.keys(gamepadState).forEach((key) => {
-    if (newGPState[key] !== gamepadState[key]) {
-      changes.push({ key: key, value: newGPState[key] });
-      gamepadState[key] = newGPState[key];
+    if (
+      typeof gamepadState[key] === "number"
+        ? Math.round(newGPState[key] * 10) / 10 !== gamepadState[key]
+        : newGPState[key] !== gamepadState[key]
+    ) {
+      console.log(
+        "updatingState: " +
+          key +
+          " | " +
+          (typeof gamepadState[key] === "number"
+            ? Math.round(newGPState[key] * 10) / 10
+            : newGPState[key]) +
+          " ? " +
+          gamepadState[key]
+      );
+      changes.push({
+        key: key,
+        value:
+          typeof gamepadState[key] === "number"
+            ? Math.round(newGPState[key] * 10) / 10
+            : newGPState[key],
+      });
+      gamepadState[key] =
+        typeof gamepadState[key] === "number"
+          ? Math.round(newGPState[key] * 10) / 10
+          : newGPState[key];
     }
   });
 
@@ -204,7 +227,7 @@ const updateGamepadState = (newGPState) => {
 
     if (key.search("-stick") === -1) {
       command = key;
-      if (value) {
+      if (value === true) {
         command += " d";
       } else {
         command += " u";
@@ -224,18 +247,21 @@ const updateGamepadState = (newGPState) => {
         command += "v ";
       }
 
-      command += Math.round(value * 10) / 10;
+      command += value;
     }
     commands.push(command);
   });
-  if (commands.length > 0) sendCommand(commands.join("&"));
+  if (commands.length > 0) {
+    console.log(commands.join("&"));
+    sendCommand(commands.join("&"));
+  }
 };
 
 //setting up translation for keyboard
 const modifierKeys = ["Control", "Shift", "Alt"];
 
 export const pressKey = (e, setState) => {
-  let newGPState = gamepadState;
+  let newGPState = { ...gamepadState };
   if (doOnNextPress && modifierKeys.findIndex((i) => i === e.key) === -1) {
     doOnNextPress(e.key);
     doOnNextPress = null;
@@ -243,8 +269,11 @@ export const pressKey = (e, setState) => {
   }
 
   if (gamepadIndex === -1 && !e.repeat) {
+    let wantedKey = false;
     Object.keys(keyboardMap).forEach((key) => {
       if (e.key === keyboardMap[key]) {
+        console.log(e.key + " | " + keyboardMap[key]);
+        wantedKey = true;
         if (key.search("-stick") >= 0) {
           //joy-stick-logic
           let joystickKey = key.substring(0, key.lastIndexOf("-"));
@@ -259,12 +288,14 @@ export const pressKey = (e, setState) => {
               return { ...newGPState };
             });
           }
+
           if (newGPState[joystickKey] < -1) {
             newGPState[joystickKey] = 0;
           } else if (newGPState[joystickKey] > 1) {
             newGPState[joystickKey] = 0;
           }
         } else {
+          //console.log("Setting " + key + " to true");
           newGPState[key] = true;
           setState((prev) => {
             return { ...newGPState };
@@ -272,12 +303,12 @@ export const pressKey = (e, setState) => {
         }
       }
     });
-    updateGamepadState(newGPState);
+    if (wantedKey === true) updateGamepadState(newGPState);
   }
 };
 
 export const releaseKey = (e, setState) => {
-  let newGPState = gamepadState;
+  let newGPState = { ...gamepadState };
   if (gamepadIndex === -1) {
     Object.keys(keyboardMap).forEach((key) => {
       if (
