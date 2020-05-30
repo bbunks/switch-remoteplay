@@ -72,7 +72,16 @@ Example: move the right stick to the left with `'s r left'` and then set it back
 For moving by a specific amount: `s <stick> <direction> <amount>`
 * stick: left: `l` or right: `r`
 * direction: horizontal: `h` or vertical: `v`
-* amount: `max`, `min`, `center`, or a decimal number between `-1.0` and `1.0` (down to up or left to right - set up to match the [Gamepad API](https://developer.mozilla.org/en-US/docs/Web/API/Gamepad_API/))
+* amount:
+  * For your convenience with writing easy to read macros/code:
+    * UP/RIGHT: `max`
+    * DOWN/LEFT: `min`
+    * back to the calibrated center: `center`
+  * For convenience with matching the [JavaScript Gamepad API](https://developer.mozilla.org/en-US/docs/Web/API/Gamepad_API/)
+a decimal number between `-1.0` and `1.0`:
+    * UP/LEFT: `-1.0` (yes `-1.0` is UP, this is how the Gamepad API works)
+    * DOWN/RIGHT: `1.0`
+    * back to the calibrated center: `0` 
 
 Examples:
 * Push the left stick up all the way: `'s l v max'`, then let go of it and set it back to it's center position with: `'s l v center'`.
@@ -80,10 +89,12 @@ Examples:
 
 Angling the sticks: `s <stick> hv <horizontal amount> <vertical amount>`
 
-Example: Push the right stick halfway up and halfway to the right: `'s r hv 0.5 0.5'`.
+Example: Push the right stick halfway to the right and halfway up: `'s r hv 0.5 -0.5'`.
+
+Example: Push the left stick halfway to the right and halfway down: `'s l hv 0.5 0.5'`.
 
 # Wait
-(not supported yet)
+(not supported yet - in discussion [here](https://github.com/juharris/switch-remoteplay/issues/8))
 This is mainly for macros. It might only be supported by the client and not the server.
 
 Format: `wait <time in milliseconds>`
