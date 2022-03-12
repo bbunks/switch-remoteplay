@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { setConnection, disconnectSocket } from "../../../../socketio";
-import useStickyState from "../../../../customHooks/stickyState";
+import useStickyState from "../../../../customHooks/useStickyState";
+import { disconnectSocket, setConnection } from "../../../../socketio";
 
 const ConnectionSettings = (props) => {
   const [connectionStatus, setConnectionStatus] = useState("");

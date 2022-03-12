@@ -1,8 +1,8 @@
 import React from "react";
-import classes from "./Controller.module.css";
-import Joystick from "./Joystick/Joystick";
-import Diamond from "./Diamond/Diamond";
 import ConnectController from "./ConnectController/ConnectController";
+import classes from "./Controller.module.css";
+import Diamond from "./Diamond/Diamond";
+import Joystick from "./Joystick/Joystick";
 const Controller = (props) => {
   return (
     <div className={classes.Controller}>
@@ -54,10 +54,6 @@ const Controller = (props) => {
           controllerList={props.controllerList}
           activeController={props.activeController}
           setActiveController={props.setActiveController}
-          channel={props.channel}
-          setChannel={props.setChannel}
-          platform={props.platform}
-          setPlatform={props.setPlatform}
         />
       </div>
       <div>
