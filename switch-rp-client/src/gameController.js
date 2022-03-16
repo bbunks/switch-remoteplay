@@ -4,6 +4,30 @@ let controllerMap;
 let keyboardMap;
 
 //this is a local version of what buttons are currently pressed.
+let gamepadState = {
+  a: false,
+  b: false,
+  x: false,
+  y: false,
+  up: false,
+  down: false,
+  right: false,
+  left: false,
+  zr: false,
+  zl: false,
+  r: false,
+  l: false,
+  plus: false,
+  minus: false,
+  r_stick: false,
+  l_stick: false,
+  home: false,
+  capture: false,
+  "right-stick-x": 0,
+  "right-stick-y": 0,
+  "left-stick-x": 0,
+  "left-stick-y": 0,
+};
 let rawGamepadState = null;
 
 //this is used to describe the current gamepad in use. If this is = -1, it is a keyboard

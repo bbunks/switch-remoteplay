@@ -1,8 +1,15 @@
 import React, { useState } from "react";
 import useStickyState from "../../../../customHooks/useStickyState";
+import { GamepadStateController } from "../../../../gamepad/GamepadController";
 import { disconnectSocket, setConnection } from "../../../../socketio";
+import Button from "../../../shared/Button";
+import TextInput from "../../../shared/TextInput";
 
-const ConnectionSettings = (props) => {
+interface props {
+  currentGamepad: GamepadStateController;
+}
+
+const ConnectionSettings = ({ currentGamepad }: props) => {
   const [connectionStatus, setConnectionStatus] = useState("");
   const [hostname, setHostname] = useStickyState(
     window.location.hostname,
@@ -25,60 +32,57 @@ const ConnectionSettings = (props) => {
     setConnectionStatus("disconnected");
   };
 
-  let jsx = null;
   switch (connectionStatus) {
     case "connecting":
-      jsx = (
-        <>
+      return (
+        <div className="flex flex-col">
           <h3>
             Connecting to {hostname}:{port}...
           </h3>
-          <button onClick={disconnect}>Cancel</button>
-        </>
+          <Button onClick={disconnect}>Cancel</Button>
+        </div>
       );
       break;
     case "connected":
-      jsx = (
-        <>
+      return (
+        <div className="flex flex-col">
           <h3>
             Connected to {hostname}:{port}
           </h3>
-          <button onClick={disconnect}>Disconnect</button>
-        </>
+          <Button onClick={disconnect}>Disconnect</Button>
+        </div>
       );
       break;
     default:
-      jsx = (
-        <>
-          <h3>Hostname</h3>
-          <input
+      return (
+        <div className="flex flex-col">
+          <TextInput
+            label="Hostname"
             value={hostname}
             onChange={(e) => {
               setHostname(e.target.value);
             }}
+            onFocus={currentGamepad.PauseListeners}
+            onBlur={currentGamepad.ResumeListeners}
           />
-
-          <h3>Port</h3>
-          <input
+          <TextInput
+            className="pt-4"
+            label="Port"
             value={port}
             onChange={(e) => {
               const reg = /^[0-9]*$/;
               if (reg.test(e.target.value)) setPort(e.target.value);
             }}
+            onFocus={currentGamepad.PauseListeners}
+            onBlur={currentGamepad.ResumeListeners}
           />
-
-          <button onClick={connect}>Connect</button>
-        </>
+          <div className="flex justify-center mt-2">
+            <Button onClick={connect}>Connect</Button>
+          </div>
+        </div>
       );
       break;
   }
-  return (
-    <>
-      <h2>Connection</h2>
-      <hr />
-      {jsx}
-    </>
-  );
 };
 
 export default ConnectionSettings;

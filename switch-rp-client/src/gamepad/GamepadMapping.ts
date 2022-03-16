@@ -1,43 +1,95 @@
+import structuredClone from "@ungap/structured-clone";
 import { Watcher } from "../components/Watcher";
 
 export class GamepadMapping {
-  map: Watcher<GamepadMap>;
-  constructor() {
-    this.map = new Watcher<GamepadMap>(DefaultKeyboardMap);
-  }
-
-  setGamepadMapping(map: GamepadMap) {
-    this.map.value = map;
+  private _mapWatcher: Watcher<GamepadMap>;
+  constructor(KeyMap: GamepadMap = DefaultKeyboardMap) {
+    this._mapWatcher = new Watcher<GamepadMap>(KeyMap);
   }
 
   addMappingListner(callback: (map: GamepadMap) => void) {
-    this.map.addListener(callback);
+    this._mapWatcher.addListener(callback);
   }
 
   getButtonBindings(button: ControllerButton): string[] {
-    const buttonMatches = Object.keys(this.map.value.buttons).filter(
-      (key) => this.map.value.buttons[key] === button
+    return Object.keys(this._mapWatcher.value.buttons).filter(
+      (key) => this._mapWatcher.value.buttons[key] === button
     );
-
-    if (!this.map.value.axes.emulated) return buttonMatches;
-
-    let virtualStickButtonMatches = Object.keys(
-      this.map.value.axes.virtualButton
-    ).filter((key) => this.map.value.buttons[key] === button);
-
-    return [...buttonMatches, ...virtualStickButtonMatches];
   }
 
-  getAnalogStickBindings(stick: ControllerStick): string[] {
-    return (
-      Object.keys(this.map).filter(
-        (key) => this.map.value.axes.analog[key] === stick
-      ) ?? ""
+  setButtonBinding(gamepadButton: string, newInput: ControllerButton) {
+    if (gamepadButton in this._mapWatcher.value.buttons)
+      this._mapWatcher.value.buttons[gamepadButton] = newInput;
+    else
+      throw `The gamepad binding '${gamepadButton}' does not exist on the button mapping`;
+  }
+
+  getEmulatedStickBindings(
+    button: ControllerButton
+  ): EmulatedControllerStickBinding[] {
+    const matches: EmulatedControllerStickBinding[] = [];
+    Object.entries(this._mapWatcher.value.sticks).forEach(
+      ([stick, { X, Y }]) => {
+        if (X.POSITIVE === button)
+          matches.push({ stick, axis: "X", direction: "POSITIVE" });
+        if (X.NEGATIVE === button)
+          matches.push({ stick, axis: "X", direction: "NEGATIVE" });
+        if (Y.POSITIVE === button)
+          matches.push({ stick, axis: "Y", direction: "POSITIVE" });
+        if (Y.NEGATIVE === button)
+          matches.push({ stick, axis: "Y", direction: "NEGATIVE" });
+      }
     );
+    return matches;
+  }
+
+  setEmulatedStickBindings(
+    binding: EmulatedControllerStickBinding,
+    newInput: ControllerButton
+  ) {
+    if (binding.stick in this._mapWatcher.value.sticks) {
+      if (!this._mapWatcher.value.emulateSticks || !binding.direction) return;
+      let clone = structuredClone(this._mapWatcher.value);
+      clone.sticks[binding.stick][binding.axis][binding.direction] = newInput;
+      this._mapWatcher.value = clone;
+    } else throw `The stick '${binding.stick}' does not exist on the gamepad`;
+  }
+
+  getAnalogStickBindings(
+    stickIndex: number,
+    axisIndex: ControllerStick
+  ): AnalogControllerStickBinding[] {
+    const matches: AnalogControllerStickBinding[] = [];
+    Object.entries(this._mapWatcher.value.sticks).forEach(
+      ([stick, { X, Y, STICK_INDEX }]) => {
+        if (STICK_INDEX === stickIndex) {
+          if (X.AXIS_INDEX === axisIndex) matches.push({ stick, axis: "X" });
+          if (Y.AXIS_INDEX === axisIndex) matches.push({ stick, axis: "Y" });
+        }
+      }
+    );
+    return matches;
+  }
+
+  setAnalogStickBindings(
+    binding: AnalogControllerStickBinding,
+    newInput: ControllerStick
+  ) {
+    if (binding.stick in this._mapWatcher.value.sticks) {
+      if (this._mapWatcher.value.emulateSticks) return;
+      let clone = structuredClone(this._mapWatcher.value);
+      clone.sticks[binding.stick][binding.axis].AXIS_INDEX = newInput;
+      this._mapWatcher.value = clone;
+    } else throw `The stick '${binding.stick}' does not exist on the gamepad`;
+  }
+
+  getGamepadMapping() {
+    return this._mapWatcher.value;
   }
 }
 
 export const DefaultControllerMap: GamepadMap = {
+  emulateSticks: false,
   buttons: {
     A: 0,
     B: 1,
@@ -45,8 +97,8 @@ export const DefaultControllerMap: GamepadMap = {
     Y: 3,
     UP: 12,
     DOWN: 13,
-    RIGHT: 14,
-    LEFT: 15,
+    LEFT: 14,
+    RIGHT: 15,
     ZR: 5,
     ZL: 4,
     R: 7,
@@ -58,18 +110,22 @@ export const DefaultControllerMap: GamepadMap = {
     HOME: "N/A",
     CAPTURE: "N/A",
   },
-  axes: {
-    emulated: false,
-    analog: {
-      RIGHT_STICK_X: 2,
-      RIGHT_STICK_Y: 3,
-      LEFT_STICK_X: 0,
-      LEFT_STICK_Y: 1,
+  sticks: {
+    RIGHT_STICK: {
+      STICK_INDEX: 1,
+      X: { AXIS_INDEX: 0 },
+      Y: { AXIS_INDEX: 1 },
+    },
+    LEFT_STICK: {
+      STICK_INDEX: 0,
+      X: { AXIS_INDEX: 0 },
+      Y: { AXIS_INDEX: 1 },
     },
   },
 };
 
 export const DefaultKeyboardMap: GamepadMap = {
+  emulateSticks: true,
   buttons: {
     A: "p",
     B: "l",
@@ -77,30 +133,39 @@ export const DefaultKeyboardMap: GamepadMap = {
     Y: "k",
     UP: "W",
     DOWN: "S",
-    RIGHT: "A",
-    LEFT: "D",
-    ZR: 5,
-    ZL: 4,
-    R: 7,
-    L: 6,
+    RIGHT: "D",
+    LEFT: "A",
+    ZR: "e",
+    ZL: "q",
+    R: "3",
+    L: "1",
     PLUS: "=",
     MINUS: "-",
-    R_STICK: 11,
-    L_STICK: 10,
+    R_STICK: "/",
+    L_STICK: "z",
     HOME: "End",
     CAPTURE: "Home",
   },
-  axes: {
-    emulated: true,
-    virtualButton: {
-      RIGHT_STICK_X_UP: "ArrowUp",
-      RIGHT_STICK_X_DOWN: "ArrowDown",
-      RIGHT_STICK_Y_LEFT: "ArrowLeft",
-      RIGHT_STICK_Y_RIGHT: "ArrowRight",
-      LEFT_STICK_X_UP: "a",
-      LEFT_STICK_X_DOWN: "d",
-      LEFT_STICK_Y_LEFT: "w",
-      LEFT_STICK_Y_RIGHT: "s",
+  sticks: {
+    RIGHT_STICK: {
+      X: {
+        POSITIVE: "ArrowRight",
+        NEGATIVE: "ArrowLeft",
+      },
+      Y: {
+        POSITIVE: "ArrowDown",
+        NEGATIVE: "ArrowUp",
+      },
+    },
+    LEFT_STICK: {
+      X: {
+        POSITIVE: "d",
+        NEGATIVE: "a",
+      },
+      Y: {
+        NEGATIVE: "w",
+        POSITIVE: "s",
+      },
     },
   },
 };

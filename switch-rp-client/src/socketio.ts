@@ -1,8 +1,12 @@
-import * as io from "socket.io-client";
+import io from "socket.io-client";
 
-let socket;
+let socket = io();
 
-export const setConnection = (ip, onConnect, onDisconnect) => {
+export const setConnection = (
+  ip: string,
+  onConnect: () => void,
+  onDisconnect: () => void
+) => {
   let parsedIP = "http://" + ip.replace("http://", "").replace("https://", "");
   socket = io(parsedIP);
 
@@ -10,16 +14,15 @@ export const setConnection = (ip, onConnect, onDisconnect) => {
   socket.on("disconnect", onDisconnect);
 };
 
-export const sendCommand = (command) => {
+export const sendCommand = (command: string) => {
   if (socket) {
-    //console.log("sending the command '" + command + "'");
     socket.emit("p", command);
   }
 };
 
 export const disconnectSocket = () => {
   socket.disconnect();
-  socket = null;
+  socket = io();
 };
 
 export default socket;

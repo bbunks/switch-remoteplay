@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { Dispatch, SetStateAction, useMemo, useState } from "react";
 import { Watcher } from "../components/Watcher";
 
 //purpose, duplicate the query strings into the url
@@ -22,14 +22,18 @@ function useWatcherState<T>(watcher: Watcher<T>) {
 
     if (newValue !== watcher.value) {
       watcher.value = newValue;
-      updateState((prev) => prev + 1);
     }
   }
+
+  //trigger state update when watched value changes
+  watcher.addListener(() => {
+    updateState((prev) => prev + 1);
+  });
 
   //This makes the state return the same list so that you can use it in useEffects
   const state = useMemo(getState, [stateIndex]);
 
-  return [state, setState];
+  return [state, setState] as [T, Dispatch<SetStateAction<T>>];
 }
 
 export default useWatcherState;

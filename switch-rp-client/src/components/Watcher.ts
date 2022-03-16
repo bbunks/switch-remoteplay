@@ -1,8 +1,8 @@
 export class Watcher<T> {
   //set types
-  private callbackFunctions: ((value: T) => void)[];
-  private rules: ((value: T) => boolean)[];
-  private InternalValue: T;
+  protected callbackFunctions: ((value: T) => void)[];
+  protected rules: ((value: T) => void)[];
+  protected InternalValue: T;
 
   //constructor
   constructor(initialValue: T) {
@@ -22,23 +22,21 @@ export class Watcher<T> {
     );
   }
 
-  addRule(rule: (value: T) => boolean) {
+  addRule(rule: (value: T) => void) {
     this.rules.push(rule);
   }
 
-  removeRule(callback: (value: T) => boolean) {
+  removeRule(callback: (value: T) => void) {
     this.rules = this.rules.filter((ele) => ele !== callback);
   }
 
   set value(value: T) {
     this.rules.forEach((rule) => {
-      if (rule(value) === false) {
-        throw `A rule was broken while trying to set a Watched value`;
-      }
+      rule(value);
     });
 
     this.InternalValue = value;
-    this.callbackFunctions.forEach((fn) => {
+    this.callbackFunctions.forEach(async (fn) => {
       fn(value);
     });
   }

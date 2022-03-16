@@ -53,6 +53,7 @@ declare module "gamepad.js" {
         | `gamepad:${number}:axis:${number}`,
       handler: (e: GamepadAxisEvent) => void
     ): void;
+    public off(event: string, handler: (e: GamepadAxisEvent) => void): void;
   }
 
   class GamepadHandler {
@@ -72,16 +73,16 @@ declare module "gamepad.js" {
   }
 
   interface GamepadOptions {
-    analog: boolean;
-    precision: number;
-    deadZone: number;
-    button: {
-      analog: boolean;
+    analog?: boolean;
+    precision?: number;
+    deadZone?: number;
+    button?: {
+      analog?: boolean;
     };
-    stick: {
-      analog: boolean;
-      precision: number;
-      deadZone: number;
+    stick?: {
+      analog?: boolean;
+      precision?: number;
+      deadZone?: number;
     };
   }
 

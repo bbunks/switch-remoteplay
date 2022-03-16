@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from "react";
-import classes from "./MapManager.module.css";
+import React, { useEffect, useState } from "react";
+import {
+  addMirrorMap,
+  getControllerMap,
+  getNextButton,
+  removeMirrorMap,
+  setBind,
+} from "../../../../gameController";
 import Bind from "./Bind/Bind";
 import JoystickBind from "./JoystickBind/JoystickBind";
-import {
-  getControllerMap,
-  setBind,
-  getNextButton,
-  addMirrorMap,
-  removeMirrorMap,
-} from "../../../../gameController";
+import classes from "./MapManager.module.css";
 
 function MapManager(props) {
   let [controllerMap, setControllerMap] = useState(getControllerMap());

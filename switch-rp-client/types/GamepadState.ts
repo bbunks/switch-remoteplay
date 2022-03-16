@@ -20,11 +20,9 @@ interface GamepadStateMap {
     HOME: boolean;
     CAPTURE: boolean;
   };
-  axes: {
-    [key: string]: number;
-    RIGHT_STICK_X: number;
-    RIGHT_STICK_Y: number;
-    LEFT_STICK_X: number;
-    LEFT_STICK_Y: number;
+  sticks: {
+    [key: string]: { X: number; Y: number };
+    RIGHT_STICK: { X: number; Y: number };
+    LEFT_STICK: { X: number; Y: number };
   };
 }
