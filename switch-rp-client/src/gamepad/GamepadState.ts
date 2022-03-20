@@ -1,20 +1,31 @@
 import structuredClone from "@ungap/structured-clone";
-import { Watcher } from "../components/Watcher";
+import { Watcher } from "../utils/Watcher";
 
 function normalize(x: number, y: number): { X: number; Y: number } {
   const distance = Math.sqrt(x * x + y * y);
   if (distance <= 1) return { X: x, Y: y };
   return { X: x / distance, Y: y / distance };
 }
+
+function limit(number: number): number {
+  return Math.max(Math.min(number, 1), -1);
+}
+
+function round(number: number): number {
+  return Math.round(number * 100) / 100;
+}
 export class GamepadState extends Watcher<GamepadStateMap> {
-  private _changeListeners: ((
-    button: string,
-    value: boolean | number
+  private _stickChangekListeners: ((
+    stick: string,
+    changedAxes: { axis: "X" | "Y"; value: number }[]
   ) => void)[];
+
+  private _buttonChangeListeners: ((button: string, value: boolean) => void)[];
 
   constructor() {
     super(INITAL_GAMEPAD_STATE);
-    this._changeListeners = [];
+    this._stickChangekListeners = [];
+    this._buttonChangeListeners = [];
   }
 
   set value(value: GamepadStateMap) {
@@ -33,13 +44,17 @@ export class GamepadState extends Watcher<GamepadStateMap> {
       const clone = structuredClone(this.InternalValue);
       clone.buttons[button] = value;
       this.InternalValue = clone;
-      this._changeListeners.forEach(async (fn) => {
+
+      //run change listeners
+      this._buttonChangeListeners.forEach(async (fn) => {
         try {
           fn(button, value);
         } catch (err) {
           console.error(err);
         }
       });
+
+      //run update listeners
       this.callbackFunctions.forEach(async (fn) => {
         try {
           fn(this.InternalValue);
@@ -50,17 +65,24 @@ export class GamepadState extends Watcher<GamepadStateMap> {
     }
   }
 
+  //Limits total distance to 1 away from center
   setStickState(stick: string, value: { X: number; Y: number }) {
     if (stick in this.InternalValue.sticks) {
       this.InternalValue.sticks[stick] = normalize(value.X, value.Y);
-      this._changeListeners.forEach(async (fn) => {
+
+      //run change listeners
+      this._stickChangekListeners.forEach(async (fn) => {
         try {
-          fn("X", this.InternalValue.sticks[stick].X);
-          fn("Y", this.InternalValue.sticks[stick].Y);
+          await fn(stick, [
+            { axis: "X", value: round(this.InternalValue.sticks[stick].X) },
+            { axis: "Y", value: round(this.InternalValue.sticks[stick].Y) },
+          ]);
         } catch (err) {
           console.error(err);
         }
       });
+
+      //run update listeners
       this.callbackFunctions.forEach(async (fn) => {
         try {
           fn(this.InternalValue);
@@ -71,19 +93,25 @@ export class GamepadState extends Watcher<GamepadStateMap> {
     }
   }
 
+  //limits the stick set to 1. This makes distances greater than 1 possible.
   setAxisState(stick: string, axis: "X" | "Y", value: number) {
     if (stick in this.InternalValue.sticks) {
-      this.InternalValue.sticks[stick][axis] = Math.max(Math.min(value, 1), -1);
-      this._changeListeners.forEach(async (fn) => {
+      const newValue = round(Math.max(Math.min(value, 1), -1));
+      this.InternalValue.sticks[stick][axis] = newValue;
+
+      //run change listeners
+      this._stickChangekListeners.forEach(async (fn) => {
         try {
-          fn(axis, value);
+          await fn(stick, [{ axis, value: newValue }]);
         } catch (err) {
           console.error(err);
         }
       });
+
+      //run update listeners
       this.callbackFunctions.forEach(async (fn) => {
         try {
-          fn(this.InternalValue);
+          await fn(this.InternalValue);
         } catch (err) {
           console.error(err);
         }
@@ -102,45 +130,38 @@ export class GamepadState extends Watcher<GamepadStateMap> {
   }
 
   // this returns the change itself. this will be used to sed key strokes and button presses
-  addChangeListener(
-    handler: (button: string, value: boolean | number) => void
-  ) {
-    this._changeListeners.push(handler);
+  addButtonChangeListener(handler: (button: string, value: boolean) => void) {
+    this._buttonChangeListeners.push(handler);
   }
 
-  removeChangeListener(
-    handler: (button: string, value: boolean | number) => void
+  removeButtonChangeListener(
+    handler: (button: string, value: boolean) => void
   ) {
-    this._changeListeners = this._changeListeners.filter(
+    this._buttonChangeListeners = this._buttonChangeListeners.filter(
+      (ele) => ele !== handler
+    );
+  }
+
+  addStickChangeListener(
+    handler: (
+      stick: string,
+      changedAxes: { axis: "X" | "Y"; value: number }[]
+    ) => void
+  ) {
+    this._stickChangekListeners.push(handler);
+  }
+
+  removeStickChangeListener(
+    handler: (
+      stick: string,
+      changedAxes: { axis: "X" | "Y"; value: number }[]
+    ) => void
+  ) {
+    this._stickChangekListeners = this._stickChangekListeners.filter(
       (ele) => ele !== handler
     );
   }
 }
-
-export const GAMEPAD_INPUT = {
-  A: "a",
-  B: "b",
-  X: "x",
-  Y: "y",
-  UP: "up",
-  DOWN: "down",
-  RIGHT: "right",
-  LEFT: "left",
-  ZR: "zr",
-  ZL: "zl",
-  R: "r",
-  L: "l",
-  PLUS: "plus",
-  MINUS: "minus",
-  R_STICK: "r_stick",
-  L_STICK: "l_stick",
-  HOME: "home",
-  CAPTURE: "capture",
-  RIGHT_STICK_X: "right-stick-x",
-  RIGHT_STICK_Y: "right-stick-y",
-  LEFT_STICK_X: "left-stick-x",
-  LEFT_STICK_Y: "left-stick-y",
-};
 
 const INITAL_GAMEPAD_STATE: GamepadStateMap = {
   buttons: {
@@ -158,8 +179,8 @@ const INITAL_GAMEPAD_STATE: GamepadStateMap = {
     L: false,
     PLUS: false,
     MINUS: false,
-    R_STICK: false,
-    L_STICK: false,
+    RIGHT_STICK: false,
+    LEFT_STICK: false,
     HOME: false,
     CAPTURE: false,
   },

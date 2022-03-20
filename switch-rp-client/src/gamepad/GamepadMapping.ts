@@ -1,10 +1,11 @@
 import structuredClone from "@ungap/structured-clone";
-import { Watcher } from "../components/Watcher";
+import { Watcher } from "../utils/Watcher";
 
 export class GamepadMapping {
   private _mapWatcher: Watcher<GamepadMap>;
   constructor(KeyMap: GamepadMap = DefaultKeyboardMap) {
     this._mapWatcher = new Watcher<GamepadMap>(KeyMap);
+    this.setEmulateSticks = this.setEmulateSticks.bind(this);
   }
 
   addMappingListner(callback: (map: GamepadMap) => void) {
@@ -22,6 +23,13 @@ export class GamepadMapping {
       this._mapWatcher.value.buttons[gamepadButton] = newInput;
     else
       throw `The gamepad binding '${gamepadButton}' does not exist on the button mapping`;
+  }
+
+  setEmulateSticks(value: boolean) {
+    console.log(value);
+    let clone = structuredClone(this._mapWatcher.value);
+    clone.emulateSticks = value;
+    this._mapWatcher.value = clone;
   }
 
   getEmulatedStickBindings(
@@ -105,8 +113,8 @@ export const DefaultControllerMap: GamepadMap = {
     L: 6,
     PLUS: 9,
     MINUS: 8,
-    R_STICK: 11,
-    L_STICK: 10,
+    RIGHT_STICK: 11,
+    LEFT_STICK: 10,
     HOME: "N/A",
     CAPTURE: "N/A",
   },
@@ -141,8 +149,8 @@ export const DefaultKeyboardMap: GamepadMap = {
     L: "1",
     PLUS: "=",
     MINUS: "-",
-    R_STICK: "/",
-    L_STICK: "z",
+    RIGHT_STICK: "/",
+    LEFT_STICK: "z",
     HOME: "End",
     CAPTURE: "Home",
   },

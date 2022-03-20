@@ -36,8 +36,8 @@ type ButtonMap = {
   L: ControllerButton;
   PLUS: ControllerButton;
   MINUS: ControllerButton;
-  R_STICK: ControllerButton;
-  L_STICK: ControllerButton;
+  RIGHT_STICK: ControllerButton;
+  LEFT_STICK: ControllerButton;
   HOME: ControllerButton;
   CAPTURE: ControllerButton;
 };

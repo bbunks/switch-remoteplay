@@ -36,6 +36,7 @@ export class Watcher<T> {
     });
 
     this.InternalValue = value;
+
     this.callbackFunctions.forEach(async (fn) => {
       fn(value);
     });

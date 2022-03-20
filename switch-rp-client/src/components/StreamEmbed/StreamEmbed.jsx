@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import classes from "./StreamEmbed.module.css";
 
 const StreamEmbed = (props) => {

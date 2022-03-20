@@ -1,5 +1,3 @@
-import React from "react";
-
 interface props {
   children: React.ReactChild;
   onClick: React.MouseEventHandler<HTMLButtonElement>;

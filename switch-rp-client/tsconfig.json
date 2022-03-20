@@ -1,6 +1,11 @@
 {
   "compilerOptions": {
-    "types": ["react/next", "react-dom/next"],
+    "types": [
+      "react/next",
+      "react-dom/next",
+      "cypress",
+      "@lensesio/cypress-websocket-testing"
+    ],
     "target": "es5", // Specify ECMAScript target version
     "lib": ["dom", "dom.iterable", "esnext"], // List of library files to be included in the compilation
     "allowJs": true, // Allow JavaScript files to be compiled
@@ -23,7 +28,8 @@
   },
   "include": [
     "src/**/*", // *** The files TypeScript should type check ***
-    "types/**/*"
+    "types/**/*",
+    "cypress/**/*"
   ],
   "exclude": ["node_modules", "build"] // *** The files to not type check ***
 }

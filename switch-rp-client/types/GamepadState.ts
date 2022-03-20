@@ -15,8 +15,8 @@ interface GamepadStateMap {
     L: boolean;
     PLUS: boolean;
     MINUS: boolean;
-    R_STICK: boolean;
-    L_STICK: boolean;
+    RIGHT_STICK: boolean;
+    LEFT_STICK: boolean;
     HOME: boolean;
     CAPTURE: boolean;
   };

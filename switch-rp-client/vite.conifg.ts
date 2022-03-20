@@ -1,7 +1,7 @@
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
+import typescriptPaths from "vite-tsconfig-paths";
 
-console.log("HYPE");
 export default defineConfig({
-  plugins: [react()],
+  plugins: [typescriptPaths(), react()],
 });

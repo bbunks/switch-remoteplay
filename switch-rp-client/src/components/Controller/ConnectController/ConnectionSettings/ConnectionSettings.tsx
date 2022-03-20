@@ -1,39 +1,73 @@
-import React, { useState } from "react";
+import { useContext, useState } from "react";
 import useStickyState from "../../../../customHooks/useStickyState";
+import useWatcherState from "../../../../customHooks/useWatcherState";
+import { PythonSwitchController } from "../../../../gamepad/GamepadConnector";
 import { GamepadStateController } from "../../../../gamepad/GamepadController";
-import { disconnectSocket, setConnection } from "../../../../socketio";
+import { GamepadContext } from "../../../context/GamepadContext";
 import Button from "../../../shared/Button";
+import Select from "../../../shared/Select";
 import TextInput from "../../../shared/TextInput";
 
 interface props {
   currentGamepad: GamepadStateController;
 }
 
+interface ListItem {
+  name: string;
+  id: number;
+}
+
+enum ConnectionStatus {
+  DISCONNECTED,
+  CONNECTING,
+  CONNECTED,
+}
+
+const ControllerTypes = [{ id: 0, name: "Switch Controller" }];
+
 const ConnectionSettings = ({ currentGamepad }: props) => {
-  const [connectionStatus, setConnectionStatus] = useState("");
+  const gamepadContext = useContext(GamepadContext);
+  const [gamepadConnector, setGamepadConnector] = useWatcherState(
+    gamepadContext.gamepadConnectorWatcher
+  );
+  const [connectionStatus, setConnectionStatus] = useState(
+    ConnectionStatus.DISCONNECTED
+  );
   const [hostname, setHostname] = useStickyState(
     window.location.hostname,
     "hostname"
   );
   const [port, setPort] = useStickyState(window.location.port, "port");
+  const [controllerType, setControllerType] = useState(ControllerTypes[0]);
   //Defining how to connect
   const connect = () => {
-    setConnectionStatus("connecting");
-    setConnection(
+    setConnectionStatus(ConnectionStatus.CONNECTING);
+    gamepadConnector.connect(
       hostname + ":" + port,
-      () => setConnectionStatus("connected"),
-      () => setConnectionStatus("disconnected")
+      () => setConnectionStatus(ConnectionStatus.CONNECTED),
+      () => setConnectionStatus(ConnectionStatus.DISCONNECTED)
     );
   };
 
+  function SelectConnectionTypeChange(selected: ListItem) {
+    setControllerType(selected);
+    gamepadContext.gamepadStateManager.addButtonChangeListener(
+      gamepadContext.gamepadConnectorWatcher.value.buttonChangeListener
+    );
+    gamepadContext.gamepadStateManager.addButtonChangeListener(
+      gamepadContext.gamepadConnectorWatcher.value.buttonChangeListener
+    );
+    setGamepadConnector(new PythonSwitchController());
+  }
+
   //Defining how to disconnect connect
   const disconnect = () => {
-    disconnectSocket();
-    setConnectionStatus("disconnected");
+    gamepadConnector.disconnect();
+    setConnectionStatus(ConnectionStatus.DISCONNECTED);
   };
 
   switch (connectionStatus) {
-    case "connecting":
+    case ConnectionStatus.CONNECTING:
       return (
         <div className="flex flex-col">
           <h3>
@@ -43,7 +77,7 @@ const ConnectionSettings = ({ currentGamepad }: props) => {
         </div>
       );
       break;
-    case "connected":
+    case ConnectionStatus.CONNECTED:
       return (
         <div className="flex flex-col">
           <h3>
@@ -55,7 +89,7 @@ const ConnectionSettings = ({ currentGamepad }: props) => {
       break;
     default:
       return (
-        <div className="flex flex-col">
+        <div className="flex flex-col gap-4">
           <TextInput
             label="Hostname"
             value={hostname}
@@ -66,15 +100,22 @@ const ConnectionSettings = ({ currentGamepad }: props) => {
             onBlur={currentGamepad.ResumeListeners}
           />
           <TextInput
-            className="pt-4"
             label="Port"
             value={port}
+            id="port-input"
             onChange={(e) => {
               const reg = /^[0-9]*$/;
               if (reg.test(e.target.value)) setPort(e.target.value);
             }}
             onFocus={currentGamepad.PauseListeners}
             onBlur={currentGamepad.ResumeListeners}
+          />
+          {/*this will not be nessicary with and intermediary server*/}
+          <Select
+            label={"Connection Type"}
+            items={ControllerTypes}
+            value={controllerType}
+            onChange={SelectConnectionTypeChange}
           />
           <div className="flex justify-center mt-2">
             <Button onClick={connect}>Connect</Button>

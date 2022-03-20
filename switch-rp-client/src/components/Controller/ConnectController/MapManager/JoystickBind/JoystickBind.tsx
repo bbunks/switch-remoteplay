@@ -1,47 +1,34 @@
-import React from "react";
-import classes from "./JoystickBind.module.css";
 import Bind from "../Bind/Bind";
 
-function JoystickBind(props) {
+type props = {
+  axis: "X" | "Y";
+  POSITIVE: ControllerButton;
+  NEGATIVE: ControllerButton;
+  STICK_INDEX: number;
+  onFocus: () => void;
+  emulated: boolean;
+};
+
+function JoystickBind({
+  axis,
+  STICK_INDEX,
+  POSITIVE,
+  NEGATIVE,
+  onFocus,
+  emulated,
+}: props) {
   return (
-    <div className={classes.Bind}>
-      <div className={classes.ColContainer}>
-        <h4>{props.label}</h4>
-      </div>
-      {props.emulated ? (
-        <>
-          <div className={classes.ColContainer}>
-            <Bind
-              small={true}
-              label={props.buttonKey.search("x") >= 0 ? "Left" : "Up"}
-              buttonKey={
-                props.buttonKey +
-                (props.buttonKey.search("x") >= 0 ? "-left" : "-up")
-              }
-              setToBind={props.setToBind}
-            />
-          </div>
-          <div className={classes.ColContainer}>
-            <Bind
-              small={true}
-              label={props.buttonKey.search("x") >= 0 ? "Right" : "Down"}
-              buttonKey={
-                props.buttonKey +
-                (props.buttonKey.search("x") >= 0 ? "-right" : "-down")
-              }
-              setToBind={props.setToBind}
-            />
-          </div>
-        </>
-      ) : (
-        <div className={classes.ColContainer}>
-          <Bind
-            small={true}
-            label="Stick"
-            buttonKey={props.buttonKey}
-            setToBind={props.setToBind}
-          />
+    <div className="flex flex-row items-center gap-8">
+      <h3 className="text-lg leading-6 font-medium text-gray-100 my-2  border-r border-gray-200 px-4">
+        {axis}
+      </h3>
+      {emulated ? (
+        <div>
+          <Bind label={axis === "X" ? "Left" : "Up"} value={NEGATIVE} />
+          <Bind label={axis === "X" ? "Right" : "Down"} value={POSITIVE} />
         </div>
+      ) : (
+        <Bind label="Stick" value={STICK_INDEX} />
       )}
     </div>
   );

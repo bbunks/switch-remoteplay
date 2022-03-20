@@ -1,172 +1,104 @@
-import React, { useEffect, useState } from "react";
-import {
-  addMirrorMap,
-  getControllerMap,
-  getNextButton,
-  removeMirrorMap,
-  setBind,
-} from "../../../../gameController";
+import { useContext, useEffect, useState } from "react";
+import { GamepadContext } from "../../../context/GamepadContext";
+import Tabs from "../../../shared/Tabs";
+import Toggle from "../../../shared/Toggle";
 import Bind from "./Bind/Bind";
 import JoystickBind from "./JoystickBind/JoystickBind";
-import classes from "./MapManager.module.css";
 
-function MapManager(props) {
-  let [controllerMap, setControllerMap] = useState(getControllerMap());
-  //This is here to trigger rerenders.
-  const [toBind, setToBind] = useState(null);
-  const [emulated, setEmulated] = useState(controllerMap["emulate-joystick"]);
+function MapManager() {
+  const gamepadContext = useContext(GamepadContext);
+  const [gamepadMap, setGamepadMap] = useState(
+    gamepadContext.gamepadMap.getGamepadMapping()
+  );
+
+  const gamepadMapManager = gamepadContext.gamepadMap;
 
   useEffect(() => {
-    //console.log("Adding MapMirror");
-    addMirrorMap((map) => {
-      setControllerMap(map);
-      setEmulated(map["emulate-joystick"]);
-    }, "MapManager");
-
-    return () => {
-      console.log("Removing MapMirror");
-      removeMirrorMap("MapManager");
-    };
-  }, []);
-
-  const setButtonBindTrigger = (key, inputRef) => {
-    //This is here to trigger rerenders.
-    setToBind(key);
-
-    if (key) {
-      getNextButton((nextButton) => {
-        //console.log("Got the presses for " + key + ": " + nextButton);
-        setBind(key, nextButton);
-        inputRef.current.blur();
-      });
-    } else {
-      getNextButton(null);
+    function updateState(value: GamepadMap) {
+      setGamepadMap(() => value);
     }
-  };
+    gamepadMapManager.addMappingListner(updateState);
+    return () => {
+      gamepadMapManager.addMappingListner(updateState);
+    };
+  });
+
+  const emulated = gamepadMap.emulateSticks;
+
+  function makeButtonBindProps(buttonName: string) {
+    return {
+      onFocus: () => {
+        // gamepadContext.gamepadStateController.value.HijackButtonListners(
+        //   (e: KeyboardEvent | GamepadButtonEvent) => {}
+        // );
+      },
+      value: gamepadMap.buttons[buttonName],
+    };
+  }
+
+  function makeJoystickBindProps(stickName: string, axis: "X" | "Y") {
+    return {
+      onFocus: () => {
+        gamepadContext.gamepadStateController.value.HijackStickListners(
+          (e: GamepadAxisEvent) => {}
+        );
+      },
+      ...(emulated
+        ? {
+            POSITIVE: gamepadMap.sticks[stickName][axis].POSITIVE,
+            NEGATIVE: gamepadMap.sticks[stickName][axis].NEGATIVE,
+          }
+        : { STICK_INDEX: gamepadMap.sticks[stickName][axis].AXIS_INDEX }),
+      axis,
+      emulated,
+    };
+  }
 
   //These could be generated with a object.keys, but I want to organize them and this was the best way I could think of
   return (
-    <div className={classes.MapManager}>
-      <div className={classes.Row}>
-        <div className={classes.ButtonGroup}>
-          <Bind label="Up" buttonKey="up" setToBind={setButtonBindTrigger} />
-          <Bind
-            label="Down"
-            buttonKey="down"
-            setToBind={setButtonBindTrigger}
-          />
-          <Bind
-            label="Left"
-            buttonKey="left"
-            setToBind={setButtonBindTrigger}
-          />
-          <Bind
-            label="Right"
-            buttonKey="right"
-            setToBind={setButtonBindTrigger}
-          />
+    <div>
+      <div className="flex flex-row justify-center items-center gap-8">
+        <div>
+          <Bind label="Up" {...makeButtonBindProps("UP")} />
+          <Bind label="Down" {...makeButtonBindProps("DOWN")} />
+          <Bind label="Left" {...makeButtonBindProps("LEFT")} />
+          <Bind label="Right" {...makeButtonBindProps("RIGHT")} />
+          <Bind label="ZL" {...makeButtonBindProps("ZL")} />
+          <Bind label="L" {...makeButtonBindProps("L")} />
+          <Bind label="Capture" {...makeButtonBindProps("CAPTURE")} />
+          <Bind label="Minus" {...makeButtonBindProps("MINUS")} />
         </div>
-        <div className={classes.ButtonGroup}>
-          <Bind label="A" buttonKey="a" setToBind={setButtonBindTrigger} />
-          <Bind label="B" buttonKey="b" setToBind={setButtonBindTrigger} />
-          <Bind label="X" buttonKey="x" setToBind={setButtonBindTrigger} />
-          <Bind label="Y" buttonKey="y" setToBind={setButtonBindTrigger} />
+        <div>
+          <Bind label="A" {...makeButtonBindProps("A")} />
+          <Bind label="B" {...makeButtonBindProps("B")} />
+          <Bind label="X" {...makeButtonBindProps("X")} />
+          <Bind label="Y" {...makeButtonBindProps("Y")} />
+          <Bind label="ZR" {...makeButtonBindProps("ZR")} />
+          <Bind label="R" {...makeButtonBindProps("R")} />
+          <Bind label="Home" {...makeButtonBindProps("HOME")} />
+          <Bind label="Plus" {...makeButtonBindProps("PLUS")} />
         </div>
       </div>
-      <div className={classes.ButtonGroup}>
-        <div className={classes.Row}>
-          <h4>Emulate Joysticks</h4>
-          <input
-            className={classes.RowSelect}
-            type="checkbox"
-            checked={emulated}
-            onChange={() => {
-              setEmulated((prev) => {
-                setBind("emulate-joystick", !prev);
-              });
-            }}
-          />
-        </div>
-        <JoystickBind
-          label="Left Stick X"
-          emulated={emulated}
-          buttonKey="left-stick-x"
-          setToBind={setButtonBindTrigger}
-        />
-        <JoystickBind
-          label="Left Stick Y"
-          emulated={emulated}
-          buttonKey="left-stick-y"
-          setToBind={setButtonBindTrigger}
-        />
-        <JoystickBind
-          label="Right Stick X"
-          emulated={emulated}
-          buttonKey="right-stick-x"
-          setToBind={setButtonBindTrigger}
-        />
-        <JoystickBind
-          label="Right Stick Y"
-          emulated={emulated}
-          buttonKey="right-stick-y"
-          setToBind={setButtonBindTrigger}
-        />
-      </div>
-      <div className={classes.Row}>
-        <div className={classes.ButtonGroup}>
-          <Bind
-            label="Capture"
-            buttonKey="capture"
-            setToBind={setButtonBindTrigger}
-          />
-          <Bind
-            label="Minus"
-            buttonKey="minus"
-            setToBind={setButtonBindTrigger}
-          />
-          <Bind
-            label="Left Stick Click"
-            buttonKey="l_stick"
-            setToBind={setButtonBindTrigger}
-          />
-          <Bind
-            label="Left Bumper"
-            buttonKey="zl"
-            setToBind={setButtonBindTrigger}
-          />
-          <Bind
-            label="Left Trigger"
-            buttonKey="l"
-            setToBind={setButtonBindTrigger}
-          />
-        </div>
-        <div className={classes.ButtonGroup}>
-          <Bind
-            label="Home"
-            buttonKey="home"
-            setToBind={setButtonBindTrigger}
-          />
-          <Bind
-            label="Plus"
-            buttonKey="plus"
-            setToBind={setButtonBindTrigger}
-          />
-          <Bind
-            label="Right Stick Click"
-            buttonKey="r_stick"
-            setToBind={setButtonBindTrigger}
-          />
-          <Bind
-            label="Right Bumper"
-            buttonKey="zr"
-            setToBind={setButtonBindTrigger}
-          />
-          <Bind
-            label="Right Trigger"
-            buttonKey="r"
-            setToBind={setButtonBindTrigger}
-          />
-        </div>
+      <Toggle
+        label="Emulate Joysticks"
+        checked={emulated}
+        onChange={gamepadContext.gamepadMap.setEmulateSticks}
+        tooltip="This is used to determine if joysticks should read from actual joysticks or from keystrokes"
+      />
+
+      <div className="justify-center items-center gap-8">
+        <Tabs.TabContainer>
+          {["LEFT", "RIGHT"].map((stick) => (
+            <Tabs.Tab title={stick + " Stick"}>
+              <JoystickBind {...makeJoystickBindProps(stick + "_STICK", "X")} />
+              <JoystickBind {...makeJoystickBindProps(stick + "_STICK", "Y")} />
+              <Bind
+                label="Stick Click"
+                {...makeButtonBindProps(stick + "_STICK")}
+              />
+            </Tabs.Tab>
+          ))}
+        </Tabs.TabContainer>
       </div>
     </div>
   );

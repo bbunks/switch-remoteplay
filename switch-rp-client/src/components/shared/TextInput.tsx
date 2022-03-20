@@ -1,5 +1,3 @@
-import React from "react";
-
 interface props extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   className?: string;

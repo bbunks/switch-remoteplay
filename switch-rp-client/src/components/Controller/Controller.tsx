@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import ControllerButton from "./ControllerButton";
 import Diamond from "./Diamond/Diamond";
 import Joystick from "./Joystick/Joystick";
@@ -8,9 +8,9 @@ interface props {
 }
 
 const BigShoulderButton =
-  "bg-neutral-900 my-4 rounded-[10%] flex justify-center text-white font-black text-3xl py-1";
+  "bg-neutral-900 my-4 rounded-[10%] flex justify-center text-white font-black text-3xl py-1 outline outline-2 outline-gray-500";
 const SmallShoulderButton =
-  "bg-neutral-900 rounded-[10%] flex justify-center text-white font-black text-large py-1 grow";
+  "bg-neutral-900 rounded-[10%] flex justify-center text-white font-black text-large py-1 grow outline outline-2 outline-gray-500";
 
 const Pressed = "bg-neutral-500 text-neutral-900";
 
@@ -79,7 +79,7 @@ const Controller = ({
             </svg>
           </ControllerButton>
         </div>
-        <Joystick stickName={"LEFT_STICK"} stickButtonName="L_STICK" />
+        <Joystick stickName={"LEFT_STICK"} stickButtonName="LEFT_STICK" />
         <Diamond
           mouseDown={mouseDown}
           buttons={[
@@ -148,7 +148,7 @@ const Controller = ({
             { symbol: "y", button: "Y" },
           ]}
         />
-        <Joystick stickName="RIGHT_STICK" stickButtonName="R_STICK" />
+        <Joystick stickName="RIGHT_STICK" stickButtonName="RIGHT_STICK" />
       </div>
     </div>
   );

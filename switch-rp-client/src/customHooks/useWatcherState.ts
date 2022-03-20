@@ -1,5 +1,5 @@
 import { Dispatch, SetStateAction, useMemo, useState } from "react";
-import { Watcher } from "../components/Watcher";
+import { Watcher } from "../utils/Watcher";
 
 //purpose, duplicate the query strings into the url
 function useWatcherState<T>(watcher: Watcher<T>) {

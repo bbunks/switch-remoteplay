@@ -26,6 +26,7 @@
     "coverage": "vitest run --coverage"
   },
   "devDependencies": {
+    "@lensesio/cypress-websocket-testing": "^1.0.1",
     "@testing-library/react": "^9.3.2",
     "@testing-library/user-event": "^7.1.2",
     "@types/react": "^17.0.40",
@@ -34,6 +35,8 @@
     "@types/ungap__structured-clone": "^0.3.0",
     "@typescript-eslint/eslint-plugin": "^5.14.0",
     "@typescript-eslint/parser": "^5.14.0",
+    "cypress": "^9.5.2",
+    "rxjs": "^7.5.5",
     "vitest": "^0.6.0"
   }
 }

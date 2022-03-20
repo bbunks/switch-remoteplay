@@ -1,5 +1,5 @@
-import React, { useRef } from "react";
-import { GamepadState } from "../../gamepad/GamepadManager";
+import { useContext, useRef } from "react";
+import { GamepadContext } from "../context/GamepadContext";
 
 interface props {
   defaultClasses: string;
@@ -19,7 +19,8 @@ export default function ControllerButton({
   mouseDown,
   button,
 }: React.PropsWithChildren<props>) {
-  const pressed = GamepadState.value.buttons[button];
+  const { gamepadStateManager: gamepadState } = useContext(GamepadContext);
+  const pressed = gamepadState.value.buttons[button];
   const buttonRef = useRef(null);
   const releaseRef = useRef<null | ((event: TouchEvent) => void)>(null);
 
@@ -42,7 +43,7 @@ export default function ControllerButton({
 
   function startClick(e: React.MouseEvent | React.TouchEvent) {
     e.preventDefault();
-    GamepadState.setButtonState(button, true);
+    gamepadState.setButtonState(button, true);
     document.addEventListener("touchmove", preventScroll, {
       passive: false,
     });
@@ -51,7 +52,7 @@ export default function ControllerButton({
   function endClick(
     e: React.MouseEvent | React.TouchEvent | MouseEvent | TouchEvent
   ) {
-    GamepadState.setButtonState(button, false);
+    gamepadState.setButtonState(button, false);
     document.removeEventListener("touchmove", preventScroll);
     if (!releaseRef.current) return;
     document.removeEventListener("touchmove", releaseRef.current, false);
@@ -62,6 +63,7 @@ export default function ControllerButton({
       className={
         "select-none " + defaultClasses + (pressed ? " " + pressedClasses : "")
       }
+      data-testid={`button-${button}`}
       onMouseDown={startClick}
       onTouchStart={touchStart}
       onMouseEnter={(e) => {

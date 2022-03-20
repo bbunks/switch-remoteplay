@@ -1,7 +1,7 @@
 /* This example requires Tailwind CSS v2.0+ */
 import { Listbox, Transition } from "@headlessui/react";
 import { CheckIcon, SelectorIcon } from "@heroicons/react/solid";
-import React, { Fragment } from "react";
+import { Fragment } from "react";
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
@@ -15,8 +15,8 @@ interface ListItem {
 interface props {
   items: ListItem[];
   label: string;
-  value: number;
-  onChange: ({ name, id }: ListItem) => void;
+  value: ListItem;
+  onChange: (item: ListItem) => void;
 }
 
 export default function Select({
@@ -25,17 +25,23 @@ export default function Select({
   value,
   onChange,
 }: props) {
-  const selected = items.find((ele) => ele.id === value) ?? items[0];
+  function findItem(itemId: number) {
+    return items.find((ele) => ele.id === itemId) ?? items[0];
+  }
+
+  const selected = items.find((ele) => ele.id === value.id) ?? items[0];
   return (
     <Listbox value={selected} onChange={onChange}>
       {({ open }) => (
-        <>
+        <div>
           <Listbox.Label className="block text-sm font-medium text-gray-200">
             {label}
           </Listbox.Label>
-          <div className="mt-1 relative">
-            <Listbox.Button className="text-black bg-white relative w-full border border-gray-300 rounded-md shadow-sm pl-3 pr-10 py-2 text-left cursor-default focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500 sm:text-sm">
-              <span className="block truncate">{selected.name}</span>
+          <div className="relative">
+            <Listbox.Button className="mt-1 text-black bg-gray-100 relative w-full border border-gray-300 rounded-md shadow-sm pl-3 pr-10 py-2 text-left cursor-default focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500 sm:text-sm">
+              <span className="block truncate text-gray-900 text-sm font-medium">
+                {selected.name}
+              </span>
               <span className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
                 <SelectorIcon
                   className="h-5 w-5 text-gray-400"
@@ -91,7 +97,7 @@ export default function Select({
               </Listbox.Options>
             </Transition>
           </div>
-        </>
+        </div>
       )}
     </Listbox>
   );

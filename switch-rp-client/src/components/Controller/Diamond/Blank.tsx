@@ -1,5 +1,3 @@
-import React from "react";
-
 const Blank = () => {
   return <div className="h-16 w-16" />;
 };

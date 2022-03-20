@@ -1,6 +1,6 @@
 import { GamepadAxisEvent, GamepadButtonEvent } from "gamepad.js";
 import { GamepadListener } from "./GamepadListener";
-import { DefaultControllerMap, GamepadMapping } from "./GamepadMapping";
+import { GamepadMapping } from "./GamepadMapping";
 import { GamepadState } from "./GamepadState";
 
 // this will be for setting the connecting different inputs to the state
@@ -12,12 +12,18 @@ export abstract class GamepadStateController {
     eventType: string;
     handler: (e: any) => void;
   }[];
+  protected _hijackButtonMethod:
+    | ((e: GamepadButtonEvent | KeyboardEvent) => void)
+    | null;
+  protected _hijackStickMethod: ((e: GamepadAxisEvent) => void) | null;
 
-  constructor(gamepadState: GamepadState) {
-    this.GamepadMapping = new GamepadMapping();
+  constructor(gamepadState: GamepadState, gamepadMapping: GamepadMapping) {
+    this.GamepadMapping = gamepadMapping;
     this._gamepadState = gamepadState;
     this._activeListeners = [];
     this._paused = false;
+    this._hijackButtonMethod = null;
+    this._hijackStickMethod = null;
   }
 
   PauseListeners(): void {
@@ -25,16 +31,19 @@ export abstract class GamepadStateController {
   }
   ResumeListeners(): void {
     this._paused = false;
+    this._hijackButtonMethod = null;
+    this._hijackStickMethod = null;
   }
 
   abstract StartListeners(): void;
   abstract StopListeners(): void;
-  abstract HijackListners(): void;
+  abstract HijackButtonListners(e: KeyboardEvent | GamepadButtonEvent): void;
+  abstract HijackStickListners(e: GamepadAxisEvent): void;
 }
 
 export class KeyboardController extends GamepadStateController {
-  constructor(gamepadState: GamepadState) {
-    super(gamepadState);
+  constructor(gamepadState: GamepadState, gamepadMapping: GamepadMapping) {
+    super(gamepadState, gamepadMapping);
     this.PauseListeners = this.PauseListeners.bind(this);
     this.ResumeListeners = this.ResumeListeners.bind(this);
   }
@@ -53,6 +62,7 @@ export class KeyboardController extends GamepadStateController {
       this.GamepadMapping.getEmulatedStickBindings(e.key).forEach((binding) => {
         e.preventDefault();
         if (e.repeat) return;
+
         this._gamepadState.moveAxisState(
           binding.stick,
           binding.axis,
@@ -93,18 +103,29 @@ export class KeyboardController extends GamepadStateController {
       window.removeEventListener(eventType, handler);
     });
   }
-
-  HijackListners(): void {
+  HijackButtonListners(e: KeyboardEvent | GamepadButtonEvent): void {
+    throw new Error("Method not implemented.");
+  }
+  HijackStickListners(e: GamepadAxisEvent): void {
     throw new Error("Method not implemented.");
   }
 }
 
 export class GamepadController extends GamepadStateController {
+  HijackButtonListners(e: GamepadButtonEvent | KeyboardEvent): void {
+    throw new Error("Method not implemented.");
+  }
+  HijackStickListners(e: GamepadAxisEvent): void {
+    throw new Error("Method not implemented.");
+  }
   private _gamepadIndex: number;
-  constructor(gamepadState: GamepadState, GamepadIndex: number) {
-    super(gamepadState);
+  constructor(
+    gamepadState: GamepadState,
+    GamepadIndex: number,
+    gamepadMapping: GamepadMapping
+  ) {
+    super(gamepadState, gamepadMapping);
     this._gamepadIndex = GamepadIndex;
-    this.GamepadMapping = new GamepadMapping(DefaultControllerMap);
   }
   StartListeners(): void {
     const newButtonListener = (e: GamepadButtonEvent) => {
@@ -158,9 +179,5 @@ export class GamepadController extends GamepadStateController {
     this._activeListeners.forEach(({ eventType, handler }) => {
       GamepadListener.off(eventType, handler);
     });
-  }
-
-  HijackListners(): void {
-    throw new Error("Method not implemented.");
   }
 }

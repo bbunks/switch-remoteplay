@@ -1,8 +1,15 @@
-import React, { useState } from "react";
+import {
+  Children,
+  isValidElement,
+  JSXElementConstructor,
+  ReactElement,
+  ReactNode,
+  useState,
+} from "react";
 
 interface ITab {
-  tabName: React.ReactNode;
-  children: React.ReactElement;
+  title: ReactNode;
+  children: ReactElement | ReactNode;
 }
 export function Tab({ children }: ITab) {
   return <>{children}</>;
@@ -14,15 +21,15 @@ function classNames(...classes: string[]) {
 
 interface TabsProps {
   children:
-    | React.ReactElement<ITab, React.JSXElementConstructor<ITab>>
-    | Array<React.ReactElement<ITab, React.JSXElementConstructor<ITab>>>;
+    | ReactElement<ITab, JSXElementConstructor<ITab>>
+    | Array<ReactElement<ITab, JSXElementConstructor<ITab>>>;
 }
 
 function Tabs({ children }: TabsProps) {
   const [index, setIndex] = useState(0);
 
-  const tabs = React.Children.toArray(children).map((ele) =>
-    React.isValidElement(ele) ? ele : <div>{ele}</div>
+  const tabs = Children.toArray(children).map((ele) =>
+    isValidElement(ele) ? ele : <div>{ele}</div>
   );
   if (tabs.length < 1) return <></>;
 
@@ -32,7 +39,6 @@ function Tabs({ children }: TabsProps) {
         <label htmlFor="tabs" className="sr-only">
           Select a tab
         </label>
-        {/* Use an "onChange" listener to redirect the user to the selected tab URL. */}
         <select
           id="tabs"
           name="tabs"
@@ -43,15 +49,15 @@ function Tabs({ children }: TabsProps) {
           defaultValue={tabs[index]?.props.name ?? "Select and Item"}
         >
           {tabs.map((tab, index) => (
-            <option key={"tab" + index} value={index}>
-              {tab.props.tabName}
+            <option key={"tab" + index} value={index} className="capitalize">
+              {tab.props.title.toLowerCase()}
             </option>
           ))}
         </select>
       </div>
-      <div className="hidden sm:block mb-2  overflow-y-visible">
-        <div className="border-b border-gray-200 overflow-x-auto">
-          <nav className="-mb-px flex overflow-y-visible" aria-label="Tabs">
+      <div className="hidden sm:block mb-2  ">
+        <div className="border-b border-gray-200 ">
+          <nav className="-mb-px flex " aria-label="Tabs">
             {tabs.map((tab, tabIndex) => (
               <button
                 key={tabIndex}
@@ -61,12 +67,12 @@ function Tabs({ children }: TabsProps) {
                 className={classNames(
                   tabIndex === index
                     ? "border-primary-300 text-primary-400"
-                    : "border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-300",
-                  `py-4 px-1 text-center border-b-2 font-medium text-sm flex-grow`
+                    : "border-transparent text-gray-200 hover:text-gray-400 hover:border-gray-300",
+                  `py-4 px-1 text-center border-b-2 font-medium text-sm flex-grow capitalize`
                 )}
                 aria-current={tabIndex === index ? "page" : undefined}
               >
-                {tab.props.tabName}
+                {tab.props.title.toLowerCase()}
               </button>
             ))}
           </nav>

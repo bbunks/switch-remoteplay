@@ -1,4 +1,3 @@
-import React from "react";
 import { GamepadStateController } from "../../../../gamepad/GamepadController";
 import Disclosure from "../../../shared/Disclosure";
 import Select from "../../../shared/Select";

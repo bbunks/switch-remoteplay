@@ -1,5 +1,5 @@
-import React, { useRef } from "react";
-import { GamepadState } from "../../../gamepad/GamepadManager";
+import { useContext, useRef } from "react";
+import { GamepadContext } from "../../context/GamepadContext";
 
 type props = {
   stickName: string;
@@ -11,15 +11,17 @@ function preventScroll(e: any) {
 }
 
 const Joystick = ({ stickName, stickButtonName }: props) => {
+  const gamepadContext = useContext(GamepadContext);
   const moved = useRef(false);
   const prevX = useRef(0);
   const prevY = useRef(0);
   const prevH = useRef(0);
   const prevV = useRef(0);
 
-  const x = GamepadState.value.sticks[stickName].X ?? 0;
-  const y = GamepadState.value.sticks[stickName].Y ?? 0;
-  const pressed = GamepadState.value.buttons[stickButtonName];
+  const x = gamepadContext.gamepadStateManager.value.sticks[stickName].X ?? 0;
+  const y = gamepadContext.gamepadStateManager.value.sticks[stickName].Y ?? 0;
+  const pressed =
+    gamepadContext.gamepadStateManager.value.buttons[stickButtonName];
 
   //const distance = Math.sqrt(x * x + y * y); used with rotate3d(0, ${x}, ${y}, ${distance * 18}deg) for a perspective
 
@@ -91,7 +93,10 @@ const Joystick = ({ stickName, stickButtonName }: props) => {
       Math.abs(v - prevV.current) > threshold
     ) {
       moved.current = true;
-      GamepadState.setStickState(stickName, { Y: v, X: h });
+      gamepadContext.gamepadStateManager.setStickState(stickName, {
+        Y: v,
+        X: h,
+      });
     }
     prevH.current = h;
     prevV.current = v;
@@ -107,8 +112,8 @@ const Joystick = ({ stickName, stickButtonName }: props) => {
     document.removeEventListener("mousemove", onDrag);
     document.removeEventListener("mouseup", onUnselect);
 
-    GamepadState.setAxisState(stickName, "X", 0);
-    GamepadState.setAxisState(stickName, "Y", 0);
+    gamepadContext.gamepadStateManager.setAxisState(stickName, "X", 0);
+    gamepadContext.gamepadStateManager.setAxisState(stickName, "Y", 0);
 
     e.preventDefault();
   }
@@ -116,7 +121,7 @@ const Joystick = ({ stickName, stickButtonName }: props) => {
   return (
     <div className="relative h-32 w-32 m-auto flex items-center justify-center">
       <div
-        className={`h-32 w-32 rounded-[50%] my-4 mx-auto absolute ${
+        className={`h-32 w-32 rounded-[50%] my-4 mx-auto absolute outline outline-2 outline-gray-500 ${
           pressed ? "bg-neutral-500" : "bg-neutral-900"
         }`}
       />
