@@ -4,17 +4,23 @@ type props = {
   axis: "X" | "Y";
   POSITIVE: ControllerButton;
   NEGATIVE: ControllerButton;
-  STICK_INDEX: number;
-  onFocus: () => void;
+  AXIS_INDEX: number | string;
+  STICK_INDEX: number | string;
+  POSITIVE_PROPS: any;
+  NEGATIVE_PROPS: any;
+  ANALOG_PROPS: any;
   emulated: boolean;
 };
 
 function JoystickBind({
   axis,
+  AXIS_INDEX,
   STICK_INDEX,
   POSITIVE,
   NEGATIVE,
-  onFocus,
+  POSITIVE_PROPS,
+  NEGATIVE_PROPS,
+  ANALOG_PROPS,
   emulated,
 }: props) {
   return (
@@ -24,11 +30,25 @@ function JoystickBind({
       </h3>
       {emulated ? (
         <div>
-          <Bind label={axis === "X" ? "Left" : "Up"} value={NEGATIVE} />
-          <Bind label={axis === "X" ? "Right" : "Down"} value={POSITIVE} />
+          <Bind
+            label={axis === "X" ? "Left" : "Up"}
+            value={NEGATIVE}
+            {...NEGATIVE_PROPS}
+          />
+          <Bind
+            label={axis === "X" ? "Right" : "Down"}
+            value={POSITIVE}
+            {...POSITIVE_PROPS}
+          />
         </div>
       ) : (
-        <Bind label="Stick" value={STICK_INDEX} />
+        <div>
+          <Bind
+            label="Stick | Axis"
+            value={STICK_INDEX + " | " + AXIS_INDEX}
+            {...ANALOG_PROPS}
+          />
+        </div>
       )}
     </div>
   );

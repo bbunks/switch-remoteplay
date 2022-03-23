@@ -10,6 +10,7 @@ import {
   KeyboardController,
 } from "../../gamepad/GamepadController";
 import { GamepadListener } from "../../gamepad/GamepadListener";
+import { GamepadMacroManager } from "../../gamepad/GamepadMacros";
 import { GamepadMapping } from "../../gamepad/GamepadMapping";
 import { GamepadState } from "../../gamepad/GamepadState";
 import { Watcher } from "../../utils/Watcher";
@@ -108,6 +109,8 @@ gamepadConnectorWatcher.addListener(() => {
   );
 });
 
+const macroManager = new GamepadMacroManager();
+
 export const DefaultValues = {
   gamepadStateManager,
   gamepadMap,
@@ -115,6 +118,7 @@ export const DefaultValues = {
   controllerListWatcher,
   activeControllerIndexWatcher,
   gamepadConnectorWatcher,
+  macroManager,
 };
 
 export const GamepadContext = createContext(DefaultValues);

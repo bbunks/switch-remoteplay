@@ -10,7 +10,6 @@ export class GamepadMapping {
     this._mapType = "";
 
     this._mapWatcher.addListener((newMap) => {
-      console.log("Setting");
       localStorage.setItem(this._mapType + "_map", JSON.stringify(newMap));
     });
   }
@@ -35,7 +34,6 @@ export class GamepadMapping {
   }
 
   setEmulateSticks(value: boolean) {
-    console.log(value);
     let clone = structuredClone(this._mapWatcher.value);
     clone.emulateSticks = value;
     this._mapWatcher.value = clone;
@@ -74,15 +72,15 @@ export class GamepadMapping {
 
   getAnalogStickBindings(
     stickIndex: number,
-    axisIndex: ControllerStick
+    axisIndex: number
   ): AnalogControllerStickBinding[] {
     const matches: AnalogControllerStickBinding[] = [];
     Object.entries(this._mapWatcher.value.sticks).forEach(
-      ([stick, { X, Y, STICK_INDEX }]) => {
-        if (STICK_INDEX === stickIndex) {
-          if (X.AXIS_INDEX === axisIndex) matches.push({ stick, axis: "X" });
-          if (Y.AXIS_INDEX === axisIndex) matches.push({ stick, axis: "Y" });
-        }
+      ([stick, { X, Y }]) => {
+        if (X.AXIS_INDEX === axisIndex && X.STICK_INDEX === stickIndex)
+          matches.push({ stick, axis: "X" });
+        if (Y.AXIS_INDEX === axisIndex && Y.STICK_INDEX === stickIndex)
+          matches.push({ stick, axis: "Y" });
       }
     );
     return matches;
@@ -95,7 +93,10 @@ export class GamepadMapping {
     if (binding.stick in this._mapWatcher.value.sticks) {
       if (this._mapWatcher.value.emulateSticks) return;
       let clone = structuredClone(this._mapWatcher.value);
-      clone.sticks[binding.stick][binding.axis].AXIS_INDEX = newInput;
+      clone.sticks[binding.stick][binding.axis] = {
+        AXIS_INDEX: newInput.axis,
+        STICK_INDEX: newInput.stick,
+      };
       this._mapWatcher.value = clone;
     } else throw `The stick '${binding.stick}' does not exist on the gamepad`;
   }
@@ -145,14 +146,12 @@ export const DefaultControllerMap: GamepadMap = {
   },
   sticks: {
     RIGHT_STICK: {
-      STICK_INDEX: 1,
-      X: { AXIS_INDEX: 0 },
-      Y: { AXIS_INDEX: 1 },
+      X: { AXIS_INDEX: 0, STICK_INDEX: 1 },
+      Y: { AXIS_INDEX: 1, STICK_INDEX: 1 },
     },
     LEFT_STICK: {
-      STICK_INDEX: 0,
-      X: { AXIS_INDEX: 0 },
-      Y: { AXIS_INDEX: 1 },
+      X: { AXIS_INDEX: 0, STICK_INDEX: 0 },
+      Y: { AXIS_INDEX: 1, STICK_INDEX: 0 },
     },
   },
 };

@@ -1,5 +1,5 @@
 type ControllerButton = string | number;
-type ControllerStick = number;
+type ControllerStick = { stick: number; axis: number };
 
 type EmulatedControllerStickBinding = {
   stick: string;
@@ -12,10 +12,15 @@ type AnalogControllerStickBinding = {
 };
 
 type AnalogStickMapping = {
-  AXIS_INDEX: ControllerStick;
+  STICK_INDEX: number;
+  AXIS_INDEX: number;
+  POSITIVE?: null;
+  NEGATIVE?: null;
 };
 
 type EmulatedStickMapping = {
+  STICK_INDEX?: null;
+  AXIS_INDEX?: null;
   POSITIVE: ControllerButton;
   NEGATIVE: ControllerButton;
 };
@@ -67,17 +72,14 @@ type GamepadMap =
       buttons: ButtonMap;
       sticks: {
         [key: string]: {
-          STICK_INDEX: number;
           X: AnalogStickMapping;
           Y: AnalogStickMapping;
         };
         RIGHT_STICK: {
-          STICK_INDEX: number;
           X: AnalogStickMapping;
           Y: AnalogStickMapping;
         };
         LEFT_STICK: {
-          STICK_INDEX: number;
           X: AnalogStickMapping;
           Y: AnalogStickMapping;
         };

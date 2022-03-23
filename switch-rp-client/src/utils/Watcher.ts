@@ -30,6 +30,12 @@ export class Watcher<T> {
     this.rules = this.rules.filter((ele) => ele !== callback);
   }
 
+  triggerListeners() {
+    this.callbackFunctions.forEach(async (fn) => {
+      fn(this.InternalValue);
+    });
+  }
+
   set value(value: T) {
     this.rules.forEach((rule) => {
       rule(value);

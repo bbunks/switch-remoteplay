@@ -54,17 +54,66 @@ function MapManager() {
 
   function makeJoystickBindProps(stickName: string, axis: "X" | "Y") {
     return {
-      onFocus: () => {
-        gamepadContext.gamepadStateController.value.HijackStickListners(
-          (e: GamepadAxisEvent) => {}
-        );
+      POSITIVE_PROPS: {
+        onFocus: () => {
+          gamepadContext.gamepadStateController.value.HijackButtonListners(
+            (e: KeyboardEvent | GamepadButtonEvent) => {
+              gamepadContext.gamepadMap.setEmulatedStickBindings(
+                { axis, stick: stickName, direction: "POSITIVE" },
+                typeof e.detail === "object" ? e.detail.button : e.key
+              );
+
+              //start the blur process once key is pressed
+              document.addEventListener("keyup", () => {
+                const activeInput = document.activeElement as HTMLInputElement;
+                activeInput.blur();
+                gamepadContext.gamepadStateController.value.ResumeListeners();
+              });
+            }
+          );
+        },
+        onBlur: gamepadContext.gamepadStateController.value.ResumeListeners,
       },
-      ...(emulated
-        ? {
-            POSITIVE: gamepadMap.sticks[stickName][axis].POSITIVE,
-            NEGATIVE: gamepadMap.sticks[stickName][axis].NEGATIVE,
-          }
-        : { STICK_INDEX: gamepadMap.sticks[stickName][axis].AXIS_INDEX }),
+      NEGATIVE_PROPS: {
+        onFocus: () => {
+          gamepadContext.gamepadStateController.value.HijackButtonListners(
+            (e: KeyboardEvent | GamepadButtonEvent) => {
+              gamepadContext.gamepadMap.setEmulatedStickBindings(
+                { axis, stick: stickName, direction: "NEGATIVE" },
+                typeof e.detail === "object" ? e.detail.button : e.key
+              );
+
+              //start the blur process once key is pressed
+              document.addEventListener("keyup", () => {
+                const activeInput = document.activeElement as HTMLInputElement;
+                activeInput.blur();
+                gamepadContext.gamepadStateController.value.ResumeListeners();
+              });
+            }
+          );
+        },
+        onBlur: gamepadContext.gamepadStateController.value.ResumeListeners,
+      },
+      ANALOG_PROPS: {
+        onFocus: () => {
+          gamepadContext.gamepadStateController.value.HijackStickListners(
+            (e: GamepadAxisEvent) => {
+              gamepadContext.gamepadMap.setAnalogStickBindings(
+                { stick: stickName, axis },
+                { axis: e.detail.axis, stick: e.detail.stick }
+              );
+
+              const activeInput = document.activeElement as HTMLInputElement;
+              activeInput.blur();
+            }
+          );
+        },
+        onBlur: gamepadContext.gamepadStateController.value.ResumeListeners,
+      },
+      POSITIVE: gamepadMap.sticks[stickName][axis]?.POSITIVE ?? "n/a",
+      NEGATIVE: gamepadMap.sticks[stickName][axis]?.NEGATIVE ?? "n/a",
+      AXIS_INDEX: gamepadMap.sticks[stickName][axis]?.AXIS_INDEX ?? "n/a",
+      STICK_INDEX: gamepadMap.sticks[stickName][axis]?.STICK_INDEX ?? "n/a",
       axis,
       emulated,
     };
@@ -105,7 +154,7 @@ function MapManager() {
       <div className="justify-center items-center gap-8">
         <Tabs.TabContainer>
           {["LEFT", "RIGHT"].map((stick) => (
-            <Tabs.Tab title={stick + " Stick"}>
+            <Tabs.Tab title={stick + " Stick"} key={stick + "jsbind"}>
               <JoystickBind {...makeJoystickBindProps(stick + "_STICK", "X")} />
               <JoystickBind {...makeJoystickBindProps(stick + "_STICK", "Y")} />
               <Bind

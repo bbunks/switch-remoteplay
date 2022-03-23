@@ -96,8 +96,6 @@ const ConnectionSettings = ({ currentGamepad }: props) => {
             onChange={(e) => {
               setHostname(e.target.value);
             }}
-            onFocus={currentGamepad.PauseListeners}
-            onBlur={currentGamepad.ResumeListeners}
           />
           <TextInput
             label="Port"
@@ -107,8 +105,6 @@ const ConnectionSettings = ({ currentGamepad }: props) => {
               const reg = /^[0-9]*$/;
               if (reg.test(e.target.value)) setPort(e.target.value);
             }}
-            onFocus={currentGamepad.PauseListeners}
-            onBlur={currentGamepad.ResumeListeners}
           />
           {/*this will not be nessicary with and intermediary server*/}
           <Select

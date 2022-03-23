@@ -5,6 +5,7 @@ import {
 } from "./components/context/GamepadContext";
 import ConnectionSettings from "./components/Controller/ConnectController/ConnectionSettings/ConnectionSettings";
 import ControllerSettings from "./components/Controller/ConnectController/ControllerSettings/ControllerSettings";
+import MacroManager from "./components/Controller/ConnectController/MacroManager/MacroManager";
 import Controller from "./components/Controller/Controller";
 import Header from "./components/Header/Header";
 import Disclosure from "./components/shared/Disclosure";
@@ -57,7 +58,7 @@ export const App = () => {
                 />
               </Tabs.Tab>
               <Tabs.Tab title="Macros">
-                <div>To be implemented</div>
+                <MacroManager />
               </Tabs.Tab>
               <Tabs.Tab title="Info">
                 <div className="flex flex-col gap-4">

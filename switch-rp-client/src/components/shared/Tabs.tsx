@@ -56,7 +56,7 @@ function Tabs({ children }: TabsProps) {
         </select>
       </div>
       <div className="hidden sm:block mb-2  ">
-        <div className="border-b border-gray-200 ">
+        <div className="border-b border-gray-200 mb-4">
           <nav className="-mb-px flex " aria-label="Tabs">
             {tabs.map((tab, tabIndex) => (
               <button

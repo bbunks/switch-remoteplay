@@ -129,6 +129,8 @@ export class GamepadController extends GamepadStateController {
   ) {
     super(gamepadState, gamepadMapping);
     this._gamepadIndex = GamepadIndex;
+    this.PauseListeners = this.PauseListeners.bind(this);
+    this.ResumeListeners = this.ResumeListeners.bind(this);
   }
   StartListeners(): void {
     const newButtonListener = (e: GamepadButtonEvent) => {
