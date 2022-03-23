@@ -55,17 +55,20 @@ activeControllerIndexWatcher.addRule(doesGamepadExist);
 
 const gamepadStateManager = new GamepadState();
 const gamepadMap = new GamepadMapping();
+gamepadMap.loadKeyboardMap();
 const gamepadStateController = new Watcher<GamepadStateController>(
   new KeyboardController(gamepadStateManager, gamepadMap)
 );
 
 activeControllerIndexWatcher.addListener((value) => {
   if (value < 0) {
+    gamepadMap.loadKeyboardMap();
     gamepadStateController.value = new KeyboardController(
       gamepadStateManager,
       gamepadMap
     );
   } else {
+    gamepadMap.loadControllerMap();
     gamepadStateController.value = new GamepadController(
       gamepadStateManager,
       value,

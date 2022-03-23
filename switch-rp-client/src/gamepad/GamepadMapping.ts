@@ -3,9 +3,16 @@ import { Watcher } from "../utils/Watcher";
 
 export class GamepadMapping {
   private _mapWatcher: Watcher<GamepadMap>;
+  private _mapType: string;
   constructor(KeyMap: GamepadMap = DefaultKeyboardMap) {
     this._mapWatcher = new Watcher<GamepadMap>(KeyMap);
     this.setEmulateSticks = this.setEmulateSticks.bind(this);
+    this._mapType = "";
+
+    this._mapWatcher.addListener((newMap) => {
+      console.log("Setting");
+      localStorage.setItem(this._mapType + "_map", JSON.stringify(newMap));
+    });
   }
 
   addMappingListner(callback: (map: GamepadMap) => void) {
@@ -19,9 +26,11 @@ export class GamepadMapping {
   }
 
   setButtonBinding(gamepadButton: string, newInput: ControllerButton) {
-    if (gamepadButton in this._mapWatcher.value.buttons)
-      this._mapWatcher.value.buttons[gamepadButton] = newInput;
-    else
+    if (gamepadButton in this._mapWatcher.value.buttons) {
+      const clone = structuredClone(this._mapWatcher.value);
+      clone.buttons[gamepadButton] = newInput;
+      this._mapWatcher.value = clone;
+    } else
       throw `The gamepad binding '${gamepadButton}' does not exist on the button mapping`;
   }
 
@@ -93,6 +102,22 @@ export class GamepadMapping {
 
   getGamepadMapping() {
     return this._mapWatcher.value;
+  }
+
+  loadControllerMap() {
+    this._mapType = "controller";
+    const newMapJson = localStorage.getItem(this._mapType + "_map");
+    this._mapWatcher.value = newMapJson
+      ? (JSON.parse(newMapJson) as GamepadMap)
+      : DefaultControllerMap;
+  }
+
+  loadKeyboardMap() {
+    this._mapType = "keyboard";
+    const newMapJson = localStorage.getItem(this._mapType + "_map");
+    this._mapWatcher.value = newMapJson
+      ? (JSON.parse(newMapJson) as GamepadMap)
+      : DefaultKeyboardMap;
   }
 }
 

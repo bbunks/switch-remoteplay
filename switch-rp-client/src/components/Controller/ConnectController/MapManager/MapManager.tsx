@@ -1,3 +1,4 @@
+import { GamepadAxisEvent, GamepadButtonEvent } from "gamepad.js";
 import { useContext, useEffect, useState } from "react";
 import { GamepadContext } from "../../../context/GamepadContext";
 import Tabs from "../../../shared/Tabs";
@@ -28,9 +29,24 @@ function MapManager() {
   function makeButtonBindProps(buttonName: string) {
     return {
       onFocus: () => {
-        // gamepadContext.gamepadStateController.value.HijackButtonListners(
-        //   (e: KeyboardEvent | GamepadButtonEvent) => {}
-        // );
+        gamepadContext.gamepadStateController.value.HijackButtonListners(
+          (e: KeyboardEvent | GamepadButtonEvent) => {
+            gamepadContext.gamepadMap.setButtonBinding(
+              buttonName,
+              typeof e.detail === "object" ? e.detail.button : e.key
+            );
+
+            //start the blur process once key is pressed
+            document.addEventListener("keyup", () => {
+              const activeInput = document.activeElement as HTMLInputElement;
+              activeInput.blur();
+              gamepadContext.gamepadStateController.value.ResumeListeners();
+            });
+          }
+        );
+      },
+      onBlur: () => {
+        gamepadContext.gamepadStateController.value.ResumeListeners();
       },
       value: gamepadMap.buttons[buttonName],
     };

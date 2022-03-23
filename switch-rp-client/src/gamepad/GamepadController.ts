@@ -29,6 +29,7 @@ export abstract class GamepadStateController {
   PauseListeners(): void {
     this._paused = true;
   }
+
   ResumeListeners(): void {
     this._paused = false;
     this._hijackButtonMethod = null;
@@ -37,8 +38,14 @@ export abstract class GamepadStateController {
 
   abstract StartListeners(): void;
   abstract StopListeners(): void;
-  abstract HijackButtonListners(e: KeyboardEvent | GamepadButtonEvent): void;
-  abstract HijackStickListners(e: GamepadAxisEvent): void;
+  HijackButtonListners(
+    cb: (e: KeyboardEvent | GamepadButtonEvent) => void
+  ): void {
+    this._hijackButtonMethod = cb;
+  }
+  HijackStickListners(cb: (e: GamepadAxisEvent) => void): void {
+    this._hijackStickMethod = cb;
+  }
 }
 
 export class KeyboardController extends GamepadStateController {
@@ -52,6 +59,10 @@ export class KeyboardController extends GamepadStateController {
     // start button listeners
     const newDownListener = (e: KeyboardEvent) => {
       if (this._paused) return;
+      if (this._hijackButtonMethod) {
+        this._hijackButtonMethod(e);
+        return;
+      }
       this.GamepadMapping.getButtonBindings(e.key).forEach((binding) => {
         e.preventDefault();
         if (e.repeat) return;
@@ -78,6 +89,10 @@ export class KeyboardController extends GamepadStateController {
 
     const newUpListener = (e: KeyboardEvent) => {
       if (this._paused) return;
+      if (this._hijackButtonMethod) {
+        this._hijackButtonMethod(e);
+        return;
+      }
       this.GamepadMapping.getButtonBindings(e.key).forEach((binding) => {
         this._gamepadState.setButtonState(binding, false);
       });
@@ -103,21 +118,9 @@ export class KeyboardController extends GamepadStateController {
       window.removeEventListener(eventType, handler);
     });
   }
-  HijackButtonListners(e: KeyboardEvent | GamepadButtonEvent): void {
-    throw new Error("Method not implemented.");
-  }
-  HijackStickListners(e: GamepadAxisEvent): void {
-    throw new Error("Method not implemented.");
-  }
 }
 
 export class GamepadController extends GamepadStateController {
-  HijackButtonListners(e: GamepadButtonEvent | KeyboardEvent): void {
-    throw new Error("Method not implemented.");
-  }
-  HijackStickListners(e: GamepadAxisEvent): void {
-    throw new Error("Method not implemented.");
-  }
   private _gamepadIndex: number;
   constructor(
     gamepadState: GamepadState,
@@ -129,6 +132,10 @@ export class GamepadController extends GamepadStateController {
   }
   StartListeners(): void {
     const newButtonListener = (e: GamepadButtonEvent) => {
+      if (this._hijackButtonMethod) {
+        this._hijackButtonMethod(e);
+        return;
+      }
       this.GamepadMapping.getButtonBindings(e.detail.button).forEach(
         (binding) => {
           this._gamepadState.setButtonState(binding, e.detail.pressed);
@@ -152,6 +159,10 @@ export class GamepadController extends GamepadStateController {
     );
 
     const newAxisListener = (e: GamepadAxisEvent) => {
+      if (this._hijackStickMethod) {
+        this._hijackStickMethod(e);
+        return;
+      }
       this.GamepadMapping.getAnalogStickBindings(
         e.detail.stick,
         e.detail.axis

@@ -32,7 +32,7 @@ export class PythonSwitchController extends GamepadConnector {
   connect(ip: string, onConnect: () => void, onDisconnect: () => void) {
     let parsedIP =
       "http://" + ip.replace("http://", "").replace("https://", "");
-    this._socket = io(parsedIP);
+    this._socket = io(parsedIP, { transports: ["websocket", "polling"] });
 
     this._socket.on("connect", onConnect);
     this._socket.on("disconnect", onDisconnect);

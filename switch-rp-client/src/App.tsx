@@ -67,7 +67,10 @@ export const App = () => {
                   <Disclosure title="About the project">
                     <div>
                       The original source code for this site can be found at{" "}
-                      <a href="https://github.com/juharris/switch-remoteplay">
+                      <a
+                        href="https://github.com/juharris/switch-remoteplay"
+                        className="text-primary-500 underline hover:text-primary-700"
+                      >
                         https://github.com/juharris/switch-remoteplay
                       </a>
                       .
