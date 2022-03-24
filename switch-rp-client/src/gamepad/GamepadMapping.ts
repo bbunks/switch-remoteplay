@@ -201,3 +201,144 @@ export const DefaultKeyboardMap: GamepadMap = {
     },
   },
 };
+
+export function readableGamepadButton(button: GamepadMapButton) {
+  switch (button) {
+    case GamepadMapButton.CAPTURE:
+      return "Capture";
+    case GamepadMapButton.HOME:
+      return "Home";
+    case GamepadMapButton.LEFT:
+      return "Left";
+    case GamepadMapButton.RIGHT:
+      return "Right";
+    case GamepadMapButton.UP:
+      return "Up";
+    case GamepadMapButton.DOWN:
+      return "Down";
+    case GamepadMapButton.LEFT_STICK:
+      return "Left Stick";
+    case GamepadMapButton.RIGHT_STICK:
+      return "Right Stick";
+    case GamepadMapButton.PLUS:
+      return "Plus";
+    case GamepadMapButton.MINUS:
+      return "Minus";
+    default:
+      return button;
+  }
+}
+
+type ControllerButton = string | number;
+type ControllerStick = { stick: number; axis: number };
+
+type EmulatedControllerStickBinding = {
+  stick: string;
+  axis: "X" | "Y";
+  direction: "POSITIVE" | "NEGATIVE";
+};
+type AnalogControllerStickBinding = {
+  stick: string;
+  axis: "X" | "Y";
+};
+
+type AnalogStickMapping = {
+  STICK_INDEX: number;
+  AXIS_INDEX: number;
+  POSITIVE?: null;
+  NEGATIVE?: null;
+};
+
+type EmulatedStickMapping = {
+  STICK_INDEX?: null;
+  AXIS_INDEX?: null;
+  POSITIVE: ControllerButton;
+  NEGATIVE: ControllerButton;
+};
+
+type ButtonMap = {
+  [key: string]: ControllerButton;
+  A: ControllerButton;
+  B: ControllerButton;
+  X: ControllerButton;
+  Y: ControllerButton;
+  UP: ControllerButton;
+  DOWN: ControllerButton;
+  RIGHT: ControllerButton;
+  LEFT: ControllerButton;
+  ZR: ControllerButton;
+  ZL: ControllerButton;
+  R: ControllerButton;
+  L: ControllerButton;
+  PLUS: ControllerButton;
+  MINUS: ControllerButton;
+  RIGHT_STICK: ControllerButton;
+  LEFT_STICK: ControllerButton;
+  HOME: ControllerButton;
+  CAPTURE: ControllerButton;
+};
+
+export enum GamepadMapButton {
+  A = "A",
+  B = "B",
+  X = "X",
+  Y = "Y",
+  UP = "UP",
+  DOWN = "DOWN",
+  RIGHT = "RIGHT",
+  LEFT = "LEFT",
+  ZR = "ZR",
+  ZL = "ZL",
+  R = "R",
+  L = "L",
+  PLUS = "PLUS",
+  MINUS = "MINUS",
+  RIGHT_STICK = "RIGHT_STICK",
+  LEFT_STICK = "LEFT_STICK",
+  HOME = "HOME",
+  CAPTURE = "CAPTURE",
+}
+
+export enum GamepadMapStick {
+  RIGHT_STICK = "RIGHT_STICK",
+  LEFT_STICK = "LEFT_STICK",
+}
+
+type GamepadMap =
+  | {
+      emulateSticks: true;
+      buttons: ButtonMap;
+      sticks: {
+        //this is for adding support for more sticks if needed
+        [key: string]: {
+          X: EmulatedStickMapping;
+          Y: EmulatedStickMapping;
+        };
+        RIGHT_STICK: {
+          X: EmulatedStickMapping;
+          Y: EmulatedStickMapping;
+        };
+        LEFT_STICK: {
+          X: EmulatedStickMapping;
+          Y: EmulatedStickMapping;
+        };
+      };
+    }
+  | {
+      emulateSticks: false;
+      buttons: ButtonMap;
+      sticks: {
+        [key: string]: {
+          X: AnalogStickMapping;
+          Y: AnalogStickMapping;
+        };
+        RIGHT_STICK: {
+          X: AnalogStickMapping;
+          Y: AnalogStickMapping;
+        };
+        LEFT_STICK: {
+          X: AnalogStickMapping;
+          Y: AnalogStickMapping;
+        };
+      };
+    };

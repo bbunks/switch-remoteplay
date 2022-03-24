@@ -7,34 +7,36 @@ function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
 }
 
-interface ListItem {
+interface ListItem<T = number> {
   name: string;
-  id: number;
+  id: T;
 }
 
-interface props {
-  items: ListItem[];
+interface props<T = number> {
+  items: ListItem<T>[];
   label: string;
-  value: ListItem;
-  onChange: (item: ListItem) => void;
+  value: Partial<ListItem<T>> | undefined;
+  onChange: (item: ListItem<T>) => void;
+  labelClasses?: string;
 }
 
-export default function Select({
+export default function Select<T>({
   items = [],
   label = "",
   value,
   onChange,
-}: props) {
-  function findItem(itemId: number) {
-    return items.find((ele) => ele.id === itemId) ?? items[0];
-  }
-
-  const selected = items.find((ele) => ele.id === value.id) ?? items[0];
+  labelClasses = "",
+}: props<T>) {
+  const selected = items.find((ele) => ele.id === value?.id) ?? items[0];
   return (
     <Listbox value={selected} onChange={onChange}>
       {({ open }) => (
         <div>
-          <Listbox.Label className="block text-sm font-medium text-gray-200">
+          <Listbox.Label
+            className={
+              "block text-sm font-medium text-gray-200 " + labelClasses
+            }
+          >
             {label}
           </Listbox.Label>
           <div className="relative">
@@ -60,7 +62,7 @@ export default function Select({
               <Listbox.Options className="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm">
                 {items.map((item) => (
                   <Listbox.Option
-                    key={item.id}
+                    key={item.id + ""}
                     className={({ active }) =>
                       classNames(
                         active ? "text-white bg-primary-600" : "text-gray-900",

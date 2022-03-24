@@ -22,6 +22,7 @@ function Bind({ label, sublabel, ...rest }: props) {
         </span>
         <input
           {...rest}
+          onChange={() => {}}
           ref={inputRef}
           type="text"
           name="company-website"

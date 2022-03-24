@@ -7,6 +7,8 @@ import {
 } from "@heroicons/react/solid";
 import { useContext, useState } from "react";
 import useWatcherState from "../../../../customHooks/useWatcherState";
+import { ActionTypes } from "../../../../gamepad/GamepadMacros";
+import { GamepadMapButton } from "../../../../gamepad/GamepadMapping";
 import { GamepadContext } from "../../../context/GamepadContext";
 import Button from "../../../shared/Button";
 import TextInput from "../../../shared/TextInput";
@@ -21,12 +23,6 @@ function MacroManager() {
   const [macroList, setMacroList] = useWatcherState(
     macroManager.macroListWatcher
   );
-  const disabled = macroList.length === 0;
-  const selectedItem = macroList.find((ele) => ele.id === activeMacroID);
-  const comboboxSelectedItem = {
-    id: selectedItem?.id,
-    name: selectedItem?.name,
-  };
 
   const activeMacro = macroManager.getMacro(activeMacroID);
 
@@ -38,16 +34,16 @@ function MacroManager() {
       <div>
         <div>
           <div className="flex flex-col mb-4">
+            <h3 className="mb-1 block text-sm font-medium text-gray-200">
+              Macros
+            </h3>
             <TextInput
               placeholder="Search"
               rightIcon={<SearchIcon className="h-6 w-6" />}
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
             />
-            <p className="mb-1 mt-4 block text-sm font-medium text-gray-200">
-              Macros
-            </p>
-            <div className="flex flex-col max-h-[200px] overflow-x-auto gap-2">
+            <div className="flex flex-col mt-4 max-h-[200px] overflow-x-auto gap-2">
               {macroList
                 .filter((ele) =>
                   ele.name.toLowerCase().startsWith(searchText.toLowerCase())
@@ -120,10 +116,29 @@ function MacroManager() {
             <p className="mb-1 mt-4 block text-sm font-medium text-gray-200">
               Commands
             </p>
-            <div className="flex flex-col max-h-[200px] overflow-x-auto gap-2">
+            <div className="flex flex-col max-h-[400px] overflow-x-auto gap-2">
               {activeMacro?.commands.map((command, index) => (
-                <Command key={"command" + index} command={command} />
+                <Command
+                  key={"command" + index}
+                  command={command}
+                  macro={activeMacro}
+                  index={index}
+                />
               ))}
+
+              <Button
+                onClick={() => {
+                  activeMacro?.commands.push({
+                    type: ActionTypes.BUTTON_ACTION,
+                    button: GamepadMapButton.A,
+                    pressed: true,
+                    delay: 0,
+                  });
+                  macroManager.macroListWatcher.triggerListeners();
+                }}
+              >
+                + New Command
+              </Button>
             </div>
             <div className="grid grid-cols-2 gap-4 mt-4">
               <Button>Record</Button>
@@ -143,7 +158,7 @@ function MacroManager() {
               <div className="flex gap-4 justify-end">
                 <Button
                   onClick={() => {
-                    setShowModal(false);
+                    setMacroToDelete("");
                   }}
                   className="bg-gray-500 hover:bg-gray-600 focus:ring-gray-500"
                 >

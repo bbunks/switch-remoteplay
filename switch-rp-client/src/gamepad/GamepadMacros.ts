@@ -6,12 +6,23 @@ const DEFAULT_OPTIONS: Options = {
   sensitivity: 0.05,
 };
 
-export enum ACTION_TYPES {
-  STICK_ACTION = "stickAction",
+export enum ActionTypes {
   BUTTON_ACTION = "buttonAction",
+  STICK_ACTION = "stickAction",
 }
 
-type Macro = {
+export function readableActionTypes(type: ActionTypes): string {
+  switch (type) {
+    case ActionTypes.STICK_ACTION:
+      return "Stick";
+    case ActionTypes.BUTTON_ACTION:
+      return "Button";
+    default:
+      return type;
+  }
+}
+
+export type Macro = {
   id: string;
   name: string;
   currentlyPlaying: boolean;
@@ -73,7 +84,7 @@ export class GamepadMacroManager {
     function buttonListener(button: string, value: boolean) {
       const delay = _timeOfLastInput ? Date.now() - _timeOfLastInput : 0;
       const newAction: ButtonState = {
-        type: "buttonAction",
+        type: ActionTypes.BUTTON_ACTION,
         delay,
         button,
         pressed: value,
@@ -91,7 +102,7 @@ export class GamepadMacroManager {
     ) {
       const delay = _timeOfLastInput ? Date.now() - _timeOfLastInput : 0;
       const newAction: StickState = {
-        type: "stickAction",
+        type: ActionTypes.STICK_ACTION,
         delay,
         stick,
         changedAxes,
@@ -157,7 +168,7 @@ interface Options {
 }
 
 export interface StickState {
-  type: ACTION_TYPES.STICK_ACTION;
+  type: ActionTypes.STICK_ACTION;
   delay: number;
   stick: string;
   changedAxes: {
@@ -167,7 +178,7 @@ export interface StickState {
 }
 
 export interface ButtonState {
-  type: ACTION_TYPES.BUTTON_ACTION;
+  type: ActionTypes.BUTTON_ACTION;
   delay: number;
   button: string;
   pressed: boolean;

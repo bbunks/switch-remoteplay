@@ -9,6 +9,7 @@ interface props extends React.InputHTMLAttributes<HTMLInputElement> {
   type?: "text" | "email" | "password";
   disabled?: boolean;
   rightIcon?: React.ReactElement | React.ReactNode;
+  labelClasses?: string;
 }
 
 export default function TextInput({
@@ -19,6 +20,7 @@ export default function TextInput({
   type = "text",
   disabled = false,
   rightIcon = null,
+  labelClasses = "",
   ...rest
 }: props) {
   const { gamepadStateController } = useContext(GamepadContext);
@@ -27,7 +29,9 @@ export default function TextInput({
       {label && (
         <label
           htmlFor={id}
-          className="mb-1 block text-sm font-medium text-gray-200"
+          className={
+            "mb-1 block text-sm font-medium text-gray-200 " + labelClasses
+          }
         >
           {label}
         </label>

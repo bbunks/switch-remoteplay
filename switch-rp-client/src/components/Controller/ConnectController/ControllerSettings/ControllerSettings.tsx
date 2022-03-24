@@ -15,6 +15,9 @@ function ControllerSettings({
   activeController,
   setActiveController,
 }: props) {
+  const controller = controllerList.find(
+    (ele) => ele.index === activeController
+  );
   return (
     <>
       <Select
@@ -25,7 +28,7 @@ function ControllerSettings({
             name: i.id,
           };
         })}
-        value={activeController}
+        value={{ id: controller?.index, name: controller?.id }}
         onChange={(selectedValue) => setActiveController(selectedValue.id)}
       />
       <p className={"text-xs mb-2 text-gray-400"}>

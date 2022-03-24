@@ -9,6 +9,11 @@ export class Watcher<T> {
     this.callbackFunctions = [];
     this.rules = [];
     this.InternalValue = initialValue;
+    this.triggerListeners = this.triggerListeners.bind(this);
+    this.addListener = this.addListener.bind(this);
+    this.removeListener = this.removeListener.bind(this);
+    this.addRule = this.addRule.bind(this);
+    this.removeRule = this.removeRule.bind(this);
   }
 
   //functions
