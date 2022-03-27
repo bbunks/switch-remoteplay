@@ -122,42 +122,49 @@ function StickCommand({
   command: StickState;
   updateCommand: (command: StickState) => void;
 }) {
+  console.log(command);
   return (
-    <>
-      <div className="grid grid-cols-3 gap-2 col-span-2">
-        <Select<ActionTypes>
-          label="Stick"
-          value={StickList.find((ele) => ele.id === command?.type)}
-          items={StickList}
-          labelClasses="text-black"
-          onChange={(item) => {
-            updateCommand({
-              ...command,
-              type: item.id,
-            });
-          }}
-        />
-        <Select<ActionTypes>
-          label="Axis"
-          value={AxesList.find((ele) => ele.id === command?.type)}
-          items={AxesList}
-          labelClasses="text-black"
-          onChange={(item) => {
-            updateCommand({
-              ...command,
-              type: item.id,
-            });
-          }}
-        />
-        <TextInput
-          label="Value"
-          labelClasses="text-gray-900"
-          value={command.delay}
-          onChange={() => {}}
-        />
+    <div className="grid grid-cols-3 gap-2 col-span-2">
+      <Select<string>
+        label="Stick"
+        value={StickList.find((ele) => ele.id === command?.stick)}
+        items={StickList}
+        labelClasses="text-black"
+        containerClasses="rows-span-2"
+        onChange={(item) => {
+          updateCommand({
+            ...command,
+            stick: item.id,
+          });
+        }}
+      />
+      <div className="grid grid-cols-2 gap-2 col-span-2">
+        {command.changedAxes?.map((change, index) => {
+          return (
+            <>
+              <Select<string>
+                label="Axis"
+                value={AxesList.find((ele) => ele.id === change.axis)}
+                items={AxesList}
+                labelClasses="text-black"
+                // onChange={(item) => {
+                //   updateCommand({
+                //     ...command,
+                //     changedAxes: item.id,
+                //   });
+                // }}
+              />
+              <TextInput
+                label="Value"
+                labelClasses="text-gray-900"
+                value={change.value}
+                onChange={() => {}}
+              />
+            </>
+          );
+        })}
       </div>
-      {/* <Disclosure title="Changes" className="col-span-2"></Disclosure> */}
-    </>
+    </div>
   );
 }
 
@@ -202,7 +209,7 @@ function Command({ macro, command, index }: props) {
             onChange={(e) =>
               wrappedUpdateCommand({
                 ...command,
-                delay: parseInt(e.target.value || 0),
+                delay: parseInt(e.target.value || "0"),
               })
             }
           />

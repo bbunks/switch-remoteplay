@@ -15,9 +15,10 @@ interface ListItem<T = number> {
 interface props<T = number> {
   items: ListItem<T>[];
   label: string;
-  value: Partial<ListItem<T>> | undefined;
+  value: Partial<ListItem<T>> | undefined | null;
   onChange: (item: ListItem<T>) => void;
   labelClasses?: string;
+  containerClasses?: string;
 }
 
 export default function Select<T>({
@@ -26,12 +27,13 @@ export default function Select<T>({
   value,
   onChange,
   labelClasses = "",
+  containerClasses = "",
 }: props<T>) {
   const selected = items.find((ele) => ele.id === value?.id) ?? items[0];
   return (
     <Listbox value={selected} onChange={onChange}>
       {({ open }) => (
-        <div>
+        <div className={containerClasses}>
           <Listbox.Label
             className={
               "block text-sm font-medium text-gray-200 " + labelClasses
