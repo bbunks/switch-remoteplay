@@ -29,9 +29,7 @@ export default function TextInput({
       {label && (
         <label
           htmlFor={id}
-          className={
-            "mb-1 block text-sm font-medium text-gray-200 " + labelClasses
-          }
+          className={"mb-1 block text-sm font-medium " + (labelClasses ?? "")}
         >
           {label}
         </label>
@@ -45,6 +43,7 @@ export default function TextInput({
           }
           {...rest}
           type={type}
+          disabled={disabled}
           onFocus={
             !disabled ? gamepadStateController.value.PauseListeners : () => {}
           }

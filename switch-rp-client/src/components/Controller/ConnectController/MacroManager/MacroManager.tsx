@@ -5,7 +5,7 @@ import {
   StopIcon,
   TrashIcon,
 } from "@heroicons/react/solid";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import useWatcherState from "../../../../customHooks/useWatcherState";
 import { ActionTypes } from "../../../../gamepad/GamepadMacros";
 import { GamepadMapButton } from "../../../../gamepad/GamepadMapping";
@@ -19,16 +19,23 @@ function MacroManager() {
   const { macroManager, gamepadStateManager } = useContext(GamepadContext);
   const [activeMacroID, setActiveMacroID] = useState("");
   const [searchText, setSearchText] = useState("");
+  const [isRecording, setIsRecording] = useState(false);
 
-  const [macroList, setMacroList] = useWatcherState(
-    macroManager.macroListWatcher
-  );
+  const [macroList] = useWatcherState(macroManager.macroListWatcher);
 
   const activeMacro = macroManager.getMacro(activeMacroID);
 
   const iconClasses =
-    "h-6 w-6 hover:text-gray-700 text-gray-800 focus:outline-none focus-visible:ring focus-visible:ring-primary-500 hover:cursor-pointer";
+    "h-6 w-6 hover:text-red-700 text-gray-800 focus:outline-none focus-visible:ring focus-visible:ring-primary-500 hover:cursor-pointer";
 
+  function stopMacroRecording() {
+    macroManager.StopMacroRecord(activeMacroID, gamepadStateManager);
+  }
+
+  useEffect(() => {
+    stopMacroRecording();
+    setIsRecording(false);
+  }, [activeMacroID]);
   return (
     <>
       <div>
@@ -51,34 +58,40 @@ function MacroManager() {
                 .map((macro) => (
                   <div
                     key={macro.id}
-                    className="relative flex justify-between w-full px-2 py-2 text-sm font-medium text-left text-gray-900 bg-gray-100 rounded-md focus:outline-none focus-visible:ring focus-visible:ring-primary-500 focus-visible:ring-opacity-75"
+                    onClick={() => setActiveMacroID(macro.id)}
+                    className="relative flex justify-between w-full px-2 py-2 text-sm font-medium text-left text-gray-900 bg-gray-100 rounded-md focus:outline-none focus-visible:ring focus-visible:ring-primary-500 focus-visible:ring-opacity-75 hover:bg-gray-300"
                   >
                     <div className="flex items-center justify-center gap-2 z-20">
                       {!macro.currentlyPlaying ? (
                         <PlayIcon
                           className={iconClasses}
-                          onClick={() => macroManager.StartMacro(macro.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            macroManager.StartMacro(macro.id);
+                          }}
                           tabIndex={0}
                         />
                       ) : (
                         <StopIcon
                           className={iconClasses}
-                          onClick={() => macroManager.StopMacro(macro.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            macroManager.StopMacro(macro.id);
+                          }}
                           tabIndex={0}
                         />
                       )}
                       <span>{macro.name}</span>
                     </div>
                     <div className="flex items-center justify-center gap-2 z-20">
-                      <PencilAltIcon
-                        className={iconClasses}
-                        onClick={() => setActiveMacroID(macro.id)}
-                        tabIndex={0}
-                      />
+                      <PencilAltIcon className={iconClasses} tabIndex={0} />
                       <TrashIcon
                         className={iconClasses}
                         tabIndex={0}
-                        onClick={() => setMacroToDelete(macro.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setMacroToDelete(macro.id);
+                        }}
                       />
                     </div>
                     {/* this is the loading bar */}
@@ -141,7 +154,25 @@ function MacroManager() {
               </Button>
             </div>
             <div className="grid grid-cols-2 gap-4 mt-4">
-              <Button>Record</Button>
+              <Button
+                onClick={() => {
+                  if (isRecording) {
+                    macroManager.StopMacroRecord(
+                      activeMacroID,
+                      gamepadStateManager
+                    );
+                    setIsRecording(false);
+                  } else {
+                    macroManager.StartMacroRecord(
+                      activeMacroID,
+                      gamepadStateManager
+                    );
+                    setIsRecording(true);
+                  }
+                }}
+              >
+                {isRecording ? "Stop Recording" : "Record"}
+              </Button>
               <Button onClick={() => setMacroToDelete(activeMacroID)}>
                 Delete
               </Button>

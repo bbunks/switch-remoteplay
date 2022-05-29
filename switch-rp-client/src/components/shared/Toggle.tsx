@@ -7,7 +7,7 @@ function classNames(...classes: string[]) {
 }
 
 interface props {
-  label: string;
+  label?: string;
   subLabel?: string;
   tooltip?: string;
   checked: boolean;
@@ -39,10 +39,12 @@ export default function Toggle({
           )}
         />
       </Switch>
-      <Switch.Label as="span" className="ml-3">
-        <span className="text-sm font-medium text-gray-100">{label}</span>
-        <span className="text-sm text-gray-300">{subLabel}</span>
-      </Switch.Label>
+      {(label || subLabel) && (
+        <Switch.Label as="span" className="ml-3">
+          <span className="text-sm font-medium text-gray-100">{label}</span>
+          <span className="text-sm text-gray-300">{subLabel}</span>
+        </Switch.Label>
+      )}
       {tooltip && <Tooltip tipText={tooltip} />}
     </Switch.Group>
   );

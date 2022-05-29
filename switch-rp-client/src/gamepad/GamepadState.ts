@@ -15,7 +15,7 @@ function round(number: number): number {
   return Math.round(number * 100) / 100;
 }
 export class GamepadState extends Watcher<GamepadStateMap> {
-  private _stickChangekListeners: ((
+  private _stickChangeListeners: ((
     stick: string,
     changedAxes: { axis: "X" | "Y"; value: number }[]
   ) => void)[];
@@ -24,7 +24,7 @@ export class GamepadState extends Watcher<GamepadStateMap> {
 
   constructor() {
     super(INITAL_GAMEPAD_STATE);
-    this._stickChangekListeners = [];
+    this._stickChangeListeners = [];
     this._buttonChangeListeners = [];
   }
 
@@ -71,7 +71,7 @@ export class GamepadState extends Watcher<GamepadStateMap> {
       this.InternalValue.sticks[stick] = normalize(value.X, value.Y);
 
       //run change listeners
-      this._stickChangekListeners.forEach(async (fn) => {
+      this._stickChangeListeners.forEach(async (fn) => {
         try {
           await fn(stick, [
             { axis: "X", value: round(this.InternalValue.sticks[stick].X) },
@@ -100,7 +100,7 @@ export class GamepadState extends Watcher<GamepadStateMap> {
       this.InternalValue.sticks[stick][axis] = newValue;
 
       //run change listeners
-      this._stickChangekListeners.forEach(async (fn) => {
+      this._stickChangeListeners.forEach(async (fn) => {
         try {
           await fn(stick, [{ axis, value: newValue }]);
         } catch (err) {
@@ -131,6 +131,7 @@ export class GamepadState extends Watcher<GamepadStateMap> {
 
   // this returns the change itself. this will be used to sed key strokes and button presses
   addButtonChangeListener(handler: (button: string, value: boolean) => void) {
+    console.log("Adding a new button listener");
     this._buttonChangeListeners.push(handler);
   }
 
@@ -148,7 +149,7 @@ export class GamepadState extends Watcher<GamepadStateMap> {
       changedAxes: { axis: "X" | "Y"; value: number }[]
     ) => void
   ) {
-    this._stickChangekListeners.push(handler);
+    this._stickChangeListeners.push(handler);
   }
 
   removeStickChangeListener(
@@ -157,7 +158,7 @@ export class GamepadState extends Watcher<GamepadStateMap> {
       changedAxes: { axis: "X" | "Y"; value: number }[]
     ) => void
   ) {
-    this._stickChangekListeners = this._stickChangekListeners.filter(
+    this._stickChangeListeners = this._stickChangeListeners.filter(
       (ele) => ele !== handler
     );
   }

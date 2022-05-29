@@ -1,10 +1,12 @@
 import { XIcon } from "@heroicons/react/solid";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import {
   ActionTypes,
   ButtonState,
+  CommandType,
+  DefaultActionStates,
   Macro,
-  readableActionTypes,
+  makeActionTypeReadable,
   StickState,
 } from "../../../../gamepad/GamepadMacros";
 import {
@@ -13,12 +15,14 @@ import {
   readableGamepadButton,
 } from "../../../../gamepad/GamepadMapping";
 import { GamepadContext } from "../../../context/GamepadContext";
-import Disclosure from "../../../shared/Disclosure";
 import Select from "../../../shared/Select";
 import TextInput from "../../../shared/TextInput";
+import Toggle from "../../../shared/Toggle";
+
+const reg = /^-?[0-9]*\.?[0-9]*$/;
 
 interface props {
-  command: StickState | ButtonState;
+  command: CommandType;
   macro: Macro;
   index: number;
 }
@@ -27,7 +31,7 @@ interface props {
 const ActionTypesList = Object.values(ActionTypes).map((ele) => {
   return {
     id: ele,
-    name: readableActionTypes(ele),
+    name: makeActionTypeReadable(ele),
   };
 });
 
@@ -43,11 +47,6 @@ const ButtonStates = [
   { name: "Release", id: false },
 ];
 
-const AxesList = [
-  { name: "X", id: "X" },
-  { name: "Y", id: "Y" },
-];
-
 const StickList = Object.values(GamepadMapStick).map((ele) => {
   return {
     id: ele,
@@ -59,8 +58,8 @@ function TypeSelect({
   command,
   updateCommand,
 }: {
-  command: ButtonState | StickState;
-  updateCommand: (command: ButtonState) => void;
+  command: CommandType;
+  updateCommand: (command: CommandType) => void;
 }) {
   return (
     <Select<ActionTypes>
@@ -69,10 +68,9 @@ function TypeSelect({
       items={ActionTypesList}
       labelClasses="text-black"
       onChange={(item) => {
-        updateCommand({
-          ...command,
-          type: item.id,
-        });
+        const newCommand: CommandType = DefaultActionStates[item.id];
+        newCommand.delay = command.delay;
+        updateCommand(newCommand);
       }}
     />
   );
@@ -122,7 +120,14 @@ function StickCommand({
   command: StickState;
   updateCommand: (command: StickState) => void;
 }) {
-  console.log(command);
+  const [stickAxises, setStickAxis] = useState(
+    Object.entries(command.changedAxes).map(([key, value]) => {
+      return {
+        id: key,
+        value: value?.toString(),
+      };
+    })
+  );
   return (
     <div className="grid grid-cols-3 gap-2 col-span-2">
       <Select<string>
@@ -139,26 +144,59 @@ function StickCommand({
         }}
       />
       <div className="grid grid-cols-2 gap-2 col-span-2">
-        {command.changedAxes?.map((change, index) => {
+        {Object.keys(command.changedAxes).map((axis, index) => {
           return (
             <>
-              <Select<string>
-                label="Axis"
-                value={AxesList.find((ele) => ele.id === change.axis)}
-                items={AxesList}
-                labelClasses="text-black"
-                // onChange={(item) => {
-                //   updateCommand({
-                //     ...command,
-                //     changedAxes: item.id,
-                //   });
-                // }}
-              />
+              <div>
+                <label
+                  htmlFor={"axesCommand" + index}
+                  className={"mb-1 block text-sm font-medium"}
+                >
+                  Enable {axis}
+                </label>
+                <Toggle
+                  checked={command.changedAxes[axis] !== null}
+                  onChange={(value) => {
+                    setStickAxis((prev) => [
+                      ...prev.filter((ele) => ele.id !== axis),
+                      {
+                        id: axis,
+                        value: value ? "0" : "",
+                      },
+                    ]);
+                    updateCommand({
+                      ...command,
+                      changedAxes: {
+                        ...command.changedAxes,
+                        [axis]: value ? 0 : null,
+                      },
+                    });
+                  }}
+                />
+              </div>
               <TextInput
+                disabled={command.changedAxes[axis] === null}
                 label="Value"
                 labelClasses="text-gray-900"
-                value={change.value}
-                onChange={() => {}}
+                value={stickAxises.find((ele) => ele.id === axis)?.value ?? ""}
+                onChange={(e) => {
+                  if (reg.test(e.target.value)) {
+                    setStickAxis((prev) => [
+                      ...prev.filter((ele) => ele.id !== axis),
+                      {
+                        id: axis,
+                        value: e.target.value,
+                      },
+                    ]);
+                    updateCommand({
+                      ...command,
+                      changedAxes: {
+                        ...command.changedAxes,
+                        [axis]: parseFloat(e.target.value),
+                      },
+                    });
+                  }
+                }}
               />
             </>
           );
@@ -170,7 +208,7 @@ function StickCommand({
 
 function updateCommand(
   macro: Macro,
-  command: StickState | ButtonState,
+  command: CommandType,
   commandIndex: number,
   triggerListeners: () => void
 ) {
@@ -189,7 +227,7 @@ function deleteCommand(
 
 function Command({ macro, command, index }: props) {
   const { macroManager } = useContext(GamepadContext);
-  function wrappedUpdateCommand(newCommand: StickState | ButtonState) {
+  function wrappedUpdateCommand(newCommand: CommandType) {
     updateCommand(
       macro,
       newCommand,

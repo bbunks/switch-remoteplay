@@ -11,7 +11,22 @@ export enum ActionTypes {
   STICK_ACTION = "stickAction",
 }
 
-export function readableActionTypes(type: ActionTypes): string {
+export const DefaultActionStates: { [key: string]: CommandType } = {
+  [ActionTypes.BUTTON_ACTION]: {
+    type: ActionTypes.BUTTON_ACTION,
+    delay: 0,
+    button: "A",
+    pressed: false,
+  },
+  [ActionTypes.STICK_ACTION]: {
+    type: ActionTypes.STICK_ACTION,
+    delay: 0,
+    stick: "LEFT_STICK",
+    changedAxes: { X: null, Y: null },
+  },
+};
+
+export function makeActionTypeReadable(type: ActionTypes): string {
   switch (type) {
     case ActionTypes.STICK_ACTION:
       return "Stick";
@@ -26,7 +41,7 @@ export type Macro = {
   id: string;
   name: string;
   currentlyPlaying: boolean;
-  commands: (StickState | ButtonState)[];
+  commands: CommandType[];
   completionPercent: 0;
 };
 
@@ -51,7 +66,8 @@ export class GamepadMacroManager {
     this.macroListWatcher = new Watcher(
       savedMacros ? JSON.parse(savedMacros) : []
     );
-    this.macroListWatcher.addListener((value) =>
+    this.macroListWatcher.addListener((value) => {
+      console.log("Writing to Storage");
       localStorage.setItem(
         "macros",
         JSON.stringify(
@@ -61,8 +77,8 @@ export class GamepadMacroManager {
             commands: ele.commands,
           }))
         )
-      )
-    );
+      );
+    });
     this.macroListeners = [];
 
     this.StartMacroRecord = this.StartMacroRecord.bind(this);
@@ -78,18 +94,22 @@ export class GamepadMacroManager {
   }
 
   StartMacroRecord(id: string, gamepadState: GamepadState) {
+    console.log("Recording Started", gamepadState);
     let _timeOfLastInput: number | null = null;
     const macro = this.getMacro(id);
+    const triggerListeners = this.macroListWatcher.triggerListeners;
 
     function buttonListener(button: string, value: boolean) {
+      console.log("Button Clicked");
       const delay = _timeOfLastInput ? Date.now() - _timeOfLastInput : 0;
-      const newAction: ButtonState = {
+      const newAction: CommandType = {
         type: ActionTypes.BUTTON_ACTION,
         delay,
         button,
         pressed: value,
       };
       macro?.commands.push(newAction);
+      triggerListeners();
       _timeOfLastInput = Date.now();
     }
 
@@ -100,14 +120,19 @@ export class GamepadMacroManager {
         value: number;
       }[]
     ) {
+      console.log("Stick Moved");
       const delay = _timeOfLastInput ? Date.now() - _timeOfLastInput : 0;
-      const newAction: StickState = {
+      const newAction: CommandType = {
         type: ActionTypes.STICK_ACTION,
         delay,
         stick,
-        changedAxes,
+        changedAxes: {
+          X: changedAxes.find((change) => change.axis === "X")?.value ?? null,
+          Y: changedAxes.find((change) => change.axis === "Y")?.value ?? null,
+        },
       };
       macro?.commands.push(newAction);
+      triggerListeners();
       _timeOfLastInput = Date.now();
     }
     gamepadState.addButtonChangeListener(buttonListener);
@@ -167,19 +192,40 @@ interface Options {
   sensitivity: number;
 }
 
-export interface StickState {
+interface AxisState {
+  [key: string]: number | null;
+  X: number | null;
+  Y: number | null;
+}
+
+interface DefaultState {
+  type?: Exclude<
+    ActionTypes,
+    ActionTypes.BUTTON_ACTION | ActionTypes.STICK_ACTION
+  >;
+  delay?: number;
+  stick?: string;
+  changedAxes?: AxisState;
+  button?: string;
+  pressed?: boolean;
+}
+
+export type CommandType = StickState | ButtonState | DefaultState;
+
+export type StickState = {
   type: ActionTypes.STICK_ACTION;
   delay: number;
   stick: string;
-  changedAxes: {
-    axis: "X" | "Y";
-    value: number;
-  }[];
-}
+  changedAxes: AxisState;
+  button?: string;
+  pressed?: boolean;
+};
 
-export interface ButtonState {
+export type ButtonState = {
   type: ActionTypes.BUTTON_ACTION;
   delay: number;
   button: string;
   pressed: boolean;
-}
+  stick?: string;
+  changedAxes?: AxisState;
+};
