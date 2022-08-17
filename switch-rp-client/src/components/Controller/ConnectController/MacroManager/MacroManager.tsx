@@ -5,7 +5,7 @@ import {
   StopIcon,
   TrashIcon,
 } from "@heroicons/react/solid";
-import { useContext, useEffect, useState } from "react";
+import { memo, useContext, useEffect, useMemo, useState } from "react";
 import useWatcherState from "../../../../customHooks/useWatcherState";
 import { ActionTypes } from "../../../../gamepad/GamepadMacros";
 import { GamepadMapButton } from "../../../../gamepad/GamepadMapping";
@@ -26,7 +26,7 @@ function MacroManager() {
   const activeMacro = macroManager.getMacro(activeMacroID);
 
   const iconClasses =
-    "h-6 w-6 hover:text-red-700 text-gray-800 focus:outline-none focus-visible:ring focus-visible:ring-primary-500 hover:cursor-pointer";
+    "h-6 w-6 hover:text-red-700 text-gray-800 relative z-1 focus:outline-none focus-visible:ring focus-visible:ring-primary-500 hover:cursor-pointer";
 
   function stopMacroRecording() {
     macroManager.StopMacroRecord(activeMacroID, gamepadStateManager);
@@ -67,7 +67,10 @@ function MacroManager() {
                           className={iconClasses}
                           onClick={(e) => {
                             e.stopPropagation();
-                            macroManager.StartMacro(macro.id);
+                            macroManager.StartMacro(
+                              macro.id,
+                              gamepadStateManager
+                            );
                           }}
                           tabIndex={0}
                         />
@@ -76,7 +79,10 @@ function MacroManager() {
                           className={iconClasses}
                           onClick={(e) => {
                             e.stopPropagation();
-                            macroManager.StopMacro(macro.id);
+                            macroManager.StopMacro(
+                              macro.id,
+                              gamepadStateManager
+                            );
                           }}
                           tabIndex={0}
                         />
@@ -100,7 +106,14 @@ function MacroManager() {
                       style={{
                         right: `${
                           100 -
-                          Math.floor((macro.completionPercent ?? 0) * 100) / 100
+                          Math.floor(
+                            (macro.timePlayed /
+                              macro.commands.reduce(
+                                (prev, curr) => prev + curr.delay,
+                                0
+                              ) ?? 0) * 100
+                          ) /
+                            100
                         }%`,
                       }}
                     />
@@ -181,7 +194,7 @@ function MacroManager() {
         )}
       </div>
       {macroToDelete && (
-        <div className="flex items-center justify-center bg-black/75 fixed top-0 left-0 w-[100vw] h-[100vh] z-100">
+        <div className="flex items-center justify-center bg-black/75 fixed top-0 left-0 w-[100vw] h-[100vh] z-[100]">
           <div className="bg-white overflow-hidden shadow rounded-lg">
             <div className="px-4 py-5 sm:p-6 text-black flex flex-col gap-4">
               <h1 className="text-xl">Delete Macro</h1>
