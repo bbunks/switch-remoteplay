@@ -1,5 +1,5 @@
 import { XIcon } from "@heroicons/react/solid";
-import { useContext, useState } from "react";
+import { CSSProperties, useContext, useState } from "react";
 import {
   ActionTypes,
   ButtonState,
@@ -25,6 +25,7 @@ interface props {
   command: CommandType;
   macro: Macro;
   index: number;
+  style: CSSProperties;
 }
 
 // TODO: Swap from enums to use current Map. Will be more extendable.
@@ -225,7 +226,7 @@ function deleteCommand(
   triggerListeners();
 }
 
-function Command({ macro, command, index }: props) {
+function Command({ macro, command, index, style }: props) {
   const { macroManager } = useContext(GamepadContext);
   function wrappedUpdateCommand(newCommand: CommandType) {
     updateCommand(
@@ -236,8 +237,15 @@ function Command({ macro, command, index }: props) {
     );
   }
   return (
-    <div className="rflex w-full px-2 py-2 text-sm font-medium text-left text-gray-900 bg-gray-100 rounded-md focus:outline-none focus-visible:ring focus-visible:ring-primary-500 focus-visible:ring-opacity-75">
-      <div className="flex gap 2 z-1 relative">
+    <div
+      style={{
+        ...style,
+        top: (style.top as number) + 8,
+        height: (style.height as number) - 8,
+      }}
+      className="flex w-full px-2 py-2 text-sm font-medium text-left text-gray-900 bg-gray-100 rounded-md focus:outline-none focus-visible:ring focus-visible:ring-primary-500 focus-visible:ring-opacity-75"
+    >
+      <div className="z-1 relative">
         <div className="grid grid-cols-2 gap-2 grow">
           <TypeSelect command={command} updateCommand={wrappedUpdateCommand} />
           <TextInput
@@ -265,7 +273,7 @@ function Command({ macro, command, index }: props) {
           )}
         </div>
         <XIcon
-          className="h-4 w-4 shrink-0 grow-0"
+          className="h-4 w-4 shrink-0 grow-0 absolute right-0 top-0"
           onClick={() =>
             deleteCommand(
               macro,

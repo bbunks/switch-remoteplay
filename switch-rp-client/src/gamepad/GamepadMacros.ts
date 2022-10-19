@@ -138,6 +138,7 @@ export class GamepadMacroManager {
     }
     gamepadState.addButtonChangeListener(buttonListener);
     gamepadState.addStickChangeListener(stickListener);
+
     this.macroListeners.push({ id, buttonListener, stickListener });
   }
 

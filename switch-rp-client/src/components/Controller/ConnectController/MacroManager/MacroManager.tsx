@@ -5,7 +5,15 @@ import {
   StopIcon,
   TrashIcon,
 } from "@heroicons/react/solid";
-import { memo, useContext, useEffect, useMemo, useState } from "react";
+import { VariableSizeList as List } from "react-window";
+import {
+  CSSProperties,
+  RefObject,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import useWatcherState from "../../../../customHooks/useWatcherState";
 import { ActionTypes } from "../../../../gamepad/GamepadMacros";
 import { GamepadMapButton } from "../../../../gamepad/GamepadMapping";
@@ -13,6 +21,7 @@ import { GamepadContext } from "../../../context/GamepadContext";
 import Button from "../../../shared/Button";
 import TextInput from "../../../shared/TextInput";
 import Command from "./Command";
+import AutoSizer from "react-virtualized-auto-sizer";
 
 function MacroManager() {
   const [macroToDelete, setMacroToDelete] = useState("");
@@ -20,6 +29,7 @@ function MacroManager() {
   const [activeMacroID, setActiveMacroID] = useState("");
   const [searchText, setSearchText] = useState("");
   const [isRecording, setIsRecording] = useState(false);
+  const macroListRenderer: RefObject<List<any> | undefined> = useRef();
 
   const [macroList] = useWatcherState(macroManager.macroListWatcher);
 
@@ -33,9 +43,68 @@ function MacroManager() {
   }
 
   useEffect(() => {
+    function resetWindowCache() {
+      macroListRenderer.current?.resetAfterIndex(0);
+    }
+
+    macroManager.macroListWatcher.addListener(resetWindowCache);
+
+    return () => {
+      macroManager.macroListWatcher.removeListener(resetWindowCache);
+    };
+  }, []);
+
+  useEffect(() => {
     stopMacroRecording();
     setIsRecording(false);
+    macroListRenderer.current?.resetAfterIndex(0);
   }, [activeMacroID]);
+
+  const macroListLength = activeMacro?.commands.length ?? 0;
+
+  const CommandRenderer = ({
+    index,
+    style,
+  }: {
+    index: number;
+    style: CSSProperties;
+  }) =>
+    index < macroListLength ? (
+      <Command
+        style={style}
+        command={activeMacro?.commands[index]}
+        macro={activeMacro}
+        index={index}
+      />
+    ) : (
+      <Button
+        style={{
+          top: (style.top as number) + 12,
+          margin: "auto",
+        }}
+        onClick={() => {
+          activeMacro?.commands.push({
+            type: ActionTypes.BUTTON_ACTION,
+            button: GamepadMapButton.A,
+            pressed: true,
+            delay: 0,
+          });
+          macroManager.macroListWatcher.triggerListeners();
+        }}
+      >
+        + New Command
+      </Button>
+    );
+
+  function getItemSize(index: number) {
+    if (index >= (activeMacro?.commands.length ?? 0)) return 50;
+    if (activeMacro?.commands[index].type === ActionTypes.BUTTON_ACTION)
+      return 158;
+    if (activeMacro?.commands[index].type === ActionTypes.STICK_ACTION)
+      return 258;
+    return 0;
+  }
+
   return (
     <>
       <div>
@@ -142,29 +211,20 @@ function MacroManager() {
             <p className="mb-1 mt-4 block text-sm font-medium text-gray-200">
               Commands
             </p>
-            <div className="flex flex-col max-h-[400px] overflow-x-auto gap-2">
-              {activeMacro?.commands.map((command, index) => (
-                <Command
-                  key={"command" + index}
-                  command={command}
-                  macro={activeMacro}
-                  index={index}
-                />
-              ))}
-
-              <Button
-                onClick={() => {
-                  activeMacro?.commands.push({
-                    type: ActionTypes.BUTTON_ACTION,
-                    button: GamepadMapButton.A,
-                    pressed: true,
-                    delay: 0,
-                  });
-                  macroManager.macroListWatcher.triggerListeners();
-                }}
-              >
-                + New Command
-              </Button>
+            <div className="flex flex-col h-[400px] overflow-x-auto gap-2">
+              <AutoSizer>
+                {({ height, width }) => (
+                  <List
+                    ref={macroListRenderer as unknown as RefObject<List<any>>}
+                    height={height}
+                    width={width}
+                    itemCount={activeMacro?.commands.length + 1 ?? 1}
+                    itemSize={getItemSize}
+                  >
+                    {CommandRenderer}
+                  </List>
+                )}
+              </AutoSizer>
             </div>
             <div className="grid grid-cols-2 gap-4 mt-4">
               <Button
